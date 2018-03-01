@@ -2,6 +2,7 @@
 
 #
 # Extracts links from tweets and harvests them to a warc-file
+# The tool uses wget to do all that
 #
 # CONSIDER: This skips links to tweets, which might not be the correct action
 # TODO: Prioritize images
