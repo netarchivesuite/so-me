@@ -77,7 +77,7 @@ harvest_all() {
         fi
         
         local WARC="${TFILE%.*}"
-        if [ ${WARC: -5} == ".json" ]; then
+        if [[ "${WARC: -5}" == ".json" ]]; then
             local WARC="${WARC%.*}"
         fi
         WARC="${WARC}.warc"
