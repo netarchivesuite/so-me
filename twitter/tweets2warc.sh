@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #
 # Re-packages Twitter tweet-JSON, as delivered by twarc, into WARCs
@@ -90,7 +90,7 @@ print_tweet_warc_entry() {
     # Generate payload
     local TFILE=$(mktemp)
 cat > "$TFILE" <<EOF    
-HTTP/1.1 200 OK"
+HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: $(bytes "$TWEET")
 
@@ -99,15 +99,12 @@ EOF
 
     # Resolve URL & timestamp
     local T_USER=$(jq -r .user.screen_name <<< "$TWEET")
-    >&2 echo "$T_USER"
-    >&2 echo "$TWEET"
-    exit
     local T_ID=$(jq -r .id_str <<< "$TWEET")
     local URL="https://twitter.com/$T_USER/$T_ID"
 
     # "created_at": "Fri Mar 02 10:26:13 +0000 2018",
     local T_TS=$(jq -r .created_at <<< "$TWEET")
-    local TIMESTAMP="$(TZ=UTZ date --date="$T_TS" +%Y-%m-%dT%H:%M:%)Z"
+    local TIMESTAMP="$(TZ=UTZ date --date="$T_TS" +%Y-%m-%dT%H:%M:%S)Z"
     # WARC-IP-Address: 46.30.212.172
 
     # Generate WARC-record headers
@@ -134,11 +131,9 @@ warc_single() {
     echo " - Converting $TWEETS to $WARC"
 
     print_warc_header > "$WARC"
-
-    while read TWEET; do
-        echo "$TWEET" | jq . > /dev/null
-        exit
-        print_tweet_warc_entry "$TWEET" > "$WARC"
+    # https://stackoverflow.com/questions/10929453/read-a-file-line-by-line-assigning-the-value-to-a-variable
+    while read -r TWEET; do
+        print_tweet_warc_entry "$TWEET" >> "$WARC"
     done < "$TWEETS"
 }
 
