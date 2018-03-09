@@ -103,7 +103,7 @@ EOF
     # Resolve URL & timestamp
     local T_USER=$(jq -r .user.screen_name <<< "$TWEET")
     local T_ID=$(jq -r .id_str <<< "$TWEET")
-    local URL="https://twitter.com/$T_USER/$T_ID"
+    local URL="https://twitter.com/$T_USER/status/$T_ID"
 
     # "created_at": "Fri Mar 02 10:26:13 +0000 2018",
     local T_TS=$(jq -r .created_at <<< "$TWEET")
