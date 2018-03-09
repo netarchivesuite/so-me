@@ -115,7 +115,6 @@ EOF
     # Generate WARC-record headers
     cat <<EOF
 ${CR}
-${CR}
 WARC/1.0${CR}
 WARC-Type: response${CR}
 WARC-Target-URI: ${URL}${CR}
@@ -127,6 +126,7 @@ Content-Length: $(wc -c < ${TFILE})${CR}
 ${CR}
 EOF
     cat "$TFILE"
+    echo "${CR}"
 }
 
 # Input tweets.json dest.warc
