@@ -13,6 +13,18 @@ With `twarc` installed, execute `twarc search '#ok18' > ok18.json`. If no result
 
 This will produce the file `ok18.json` with multiple tweets, each one represented by a single line of JSON. 
 
+## Basic statistics
+
+The script `top_twitter.sh` performs basic statistics extraction from the JSON from Twitters API. Run the script without arguments for usage.
+
+Example: Extracts the top-10 most active tweeters for a harvest with `TOPX=10 TOPTYPE=authors_by_tweets ./top_twitter.sh ok18.json`.
+
+
+## Twitter-JSON -> WARC
+
+The script `tweets2warc.sh` takes tweet-JSON and represents it as a WARC file.
+
+
 ## Linked resources
 
 The script `./harvest_resources.sh` extracts all external links from Twitter-JSON and harvests the resources using `wget`.
@@ -23,26 +35,16 @@ This will produce the files
 ```
 ok18.links
 ok18.log
-ok18.warc.gz
+ok18.resources.warc.gz
 ```
-
-
-## Basic statistics
-
-The script `top_twitter.sh` performs basic statistics extraction from the JSON from Twitters API. Run the script without arguments for usage.
-
-Example: Extracts the top-10 most active tweeters for a harvest with `TOPX=10 TOPTYPE=authors_by_tweets ./top_twitter.sh ok18.json`.
-
 
 ## Harvest
 
-An existing script has gone missing and must be found or re-created.
+The script `tweet_filter.sh` retrieves all tweets which contains one or more specified keywords. The process is streaming and does not fetch historical tweets (use `twarc search` for that).
 
+Example: Harvest all tweets mentioning 'dkpol' or 'kvotekonge' for the next half hour: `RUNTIME=1800 ./tweet_filter.sh 'dkpol,kvotekonge'`.
 
-## Twitter-JSON -> WARC
-
-To be implemented (Toke Eskildsen is working on this).
-
+Optionally, `tweet_filter.sh` can call both `tweets2warc.sh` and `harvest_resources` after tweet-collection has finished, thereby producing WARC-files readu for indexing.
 
 ## Solr-index
 
