@@ -10,6 +10,8 @@
 #
 
 # TODO: Add option for packing multiple tweet-collections into a single WARC.
+# TODO: Generate Last-Modified: Sun, 28 Dec 2014 22:40:37 GMT^M
+
 
 ###############################################################################
 # CONFIG
@@ -39,6 +41,8 @@ check_parameters() {
         echo "No Twitter API JSON files specified"
         usage 2
     fi
+    CR=$(printf '\x0d')
+    HT=$(printf '\x09')
 }
 
 ################################################################################
@@ -65,19 +69,19 @@ sha1_32() {
 print_warc_header() {
     local T=$(mktemp)
     cat > "$T" <<EOF
-# 
-operator: ${WARC_OPERATOR}
-software: ${WARC_SOFTWARE}
+# ${CR}
+operator: ${WARC_OPERATOR}${CR}
+software: ${WARC_SOFTWARE}${CR}
+${CR}
 EOF
-    
     cat <<EOF
-WARC/1.0
-WARC-Type: warcinfo
-WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z
-WARC-Record-ID: <urn:uuid:$(uuidgen)>
-Content-Type: application/warc-fields
-Content-Length: $(wc -c < "$T")
-
+WARC/1.0${CR}
+WARC-Type: warcinfo${CR}
+WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+Content-Type: application/warc-fields${CR}
+Content-Length: $(wc -c < "$T")${CR}
+${CR}
 EOF
     cat "$T"
     rm "$T"
@@ -90,11 +94,11 @@ print_tweet_warc_entry() {
     # Generate payload
     local TFILE=$(mktemp)
 cat > "$TFILE" <<EOF    
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: $(bytes "$TWEET")
-X-WARC-signal: twitter_tweet
-
+HTTP/1.1 200 OK${CR}
+Content-Type: application/json${CR}
+Content-Length: $(bytes "$TWEET")${CR}
+X-WARC-signal: twitter_tweet${CR}
+${CR}
 EOF
     echo "$TWEET" >> "$TFILE"
 
@@ -110,17 +114,17 @@ EOF
 
     # Generate WARC-record headers
     cat <<EOF
-
-
-WARC/1.0
-WARC-Type: response
-WARC-Target-URI: ${URL}
-WARC-Date: ${TIMESTAMP}
-WARC-Payload-Digest: $(sha1_32 "$TFILE")
-WARC-Record-ID: <urn:uuid:$(uuidgen)>
-Content-Type: application/http; msgtype=response
-Content-Length: $(wc -c < ${TFILE})
-
+${CR}
+${CR}
+WARC/1.0${CR}
+WARC-Type: response${CR}
+WARC-Target-URI: ${URL}${CR}
+WARC-Date: ${TIMESTAMP}${CR}
+WARC-Payload-Digest: $(sha1_32 "$TFILE")${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+Content-Type: application/http; msgtype=response${CR}
+Content-Length: $(wc -c < ${TFILE})${CR}
+${CR}
 EOF
     cat "$TFILE"
 }
