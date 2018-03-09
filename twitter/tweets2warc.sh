@@ -10,6 +10,8 @@
 #
 
 # TODO: Add option for packing multiple tweet-collections into a single WARC.
+# TODO: Fix generated URL
+#
 
 ###############################################################################
 # CONFIG
@@ -93,6 +95,7 @@ cat > "$TFILE" <<EOF
 HTTP/1.1 200 OK
 Content-Type: application/json
 Content-Length: $(bytes "$TWEET")
+X-WARC-signal: twitter_tweet
 
 EOF
     echo "$TWEET" >> "$TFILE"
