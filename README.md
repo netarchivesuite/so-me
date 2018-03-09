@@ -1,6 +1,7 @@
 # so-me
 Social Media harvests
 
+Scripts for handling data from social media networks using APIs, as opposed to www-based harvesting.
 
 ## Twitter
 

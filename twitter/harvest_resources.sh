@@ -16,7 +16,7 @@ if [[ -s "harvest_resources.conf" ]]; then
     source harvest_resources.conf
 fi
 : ${QUOTA_MIN:="50"} # Minimum quota (MB) regardless of tweet count in a single tweets-file
-: ${QUOTA_MAX:="500"} # Minimum quota (MB) regardless of tweet count in a single tweets-file
+: ${QUOTA_MAX:="500"} # Maximum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_PER_TWEET:="10"} # MB
 : ${TIMEOUT:="60"}
 popd > /dev/null
@@ -45,8 +45,9 @@ check_parameters() {
 harvest() {
     local TFILE="$1"
     local WARC="$2"
-    local LINKS="${WARC%.*}.links"
-    local LOG="${WARC%.*}.log"
+    local WBASE="${WARC%.*}"
+    local LINKS="${WBASE%.*}.links"
+    local LOG="${WBASE%.*}.log"
     local WSANS="${WARC%.*}"
     local WT="t_wget_warc_tmp_$RANDOM"
     
@@ -77,11 +78,11 @@ harvest_all() {
         fi
         
         local WARC="${TFILE%.*}"
-        if [ ${WARC: -5} == ".json" ]; then
+        if [[ "${WARC: -5}" == ".json" ]]; then
             local WARC="${WARC%.*}"
         fi
-        WARC="${WARC}.warc"
-        if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
+        WARC="${WARC}.resources.warc"
+        if [[ -s "${WARC}" || -s "${WARC}.gz" ]]; then
             echo " - Skipping $TFILE as is is already harvested"
         else
             harvest "$TFILE" "$WARC"
