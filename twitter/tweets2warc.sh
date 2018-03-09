@@ -72,7 +72,6 @@ print_warc_header() {
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
-${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
@@ -85,6 +84,8 @@ ${CR}
 EOF
     cat "$T"
     rm "$T"
+    echo "${CR}"
+    echo "${CR}"
 }
 
 # Input: tweet JSON (single line)
@@ -114,7 +115,6 @@ EOF
 
     # Generate WARC-record headers
     cat <<EOF
-${CR}
 WARC/1.0${CR}
 WARC-Type: response${CR}
 WARC-Target-URI: ${URL}${CR}
@@ -126,6 +126,7 @@ Content-Length: $(wc -c < ${TFILE})${CR}
 ${CR}
 EOF
     cat "$TFILE"
+    echo "${CR}"
     echo "${CR}"
 }
 
