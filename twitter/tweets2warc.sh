@@ -10,8 +10,6 @@
 #
 
 # TODO: Add option for packing multiple tweet-collections into a single WARC.
-# TODO: Fix generated URL
-#
 
 ###############################################################################
 # CONFIG
