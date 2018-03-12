@@ -101,7 +101,7 @@ EOF
 # Input: tweet JSON (single line)
 print_tweet_warc_entry() {
     local TWEET="$1"
-    
+
     # Generate payload. Not the single CR dividing header & record and the two CRs postfixinf the content
     # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
     local TFILE=$(mktemp)
@@ -145,13 +145,18 @@ EOF
 warc_single() {
     local TWEETS="$1"
     local WARC="$2"
+    local T=$(mktemp)
     echo " - Converting $TWEETS to $WARC"
-
+    
     print_warc_header > "$WARC"
     # https://stackoverflow.com/questions/10929453/read-a-file-line-by-line-assigning-the-value-to-a-variable
+    # TODO: Figure out how to bypass the stupid temporary file. How do we iterate lines from zcat output? IFS=$'\n' does not help
+    zcat -f "$TWEETS" > "$T"
     while read -r TWEET; do
         print_tweet_warc_entry "$TWEET" >> "$WARC"
-    done < "$TWEETS"
+    done < "$T"
+    #    done <<< $(zcat -f "$TWEETS")
+    rm "$T"
 }
 
 warc_all() {
