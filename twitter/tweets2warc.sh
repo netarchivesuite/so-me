@@ -25,6 +25,7 @@ fi
 # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinof
 : ${WARC_OPERATOR:="The Royal Danish Library"}
 : ${WARC_SOFTWARE:="Homebrew experimental"}
+: ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
 popd > /dev/null
 
 usage() {
@@ -64,6 +65,14 @@ sha1_32() {
     sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | base32
 }
 
+# Input String
+sha1_32_string() {
+    local CONTENT="$1"
+    # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
+    echo -n "sha1:"
+    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | base32
+}
+
 # TODO: CRLF-separator
 # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinfo
 print_warc_header() {
@@ -92,7 +101,8 @@ EOF
 print_tweet_warc_entry() {
     local TWEET="$1"
     
-    # Generate payload
+    # Generate payload. Not the single CR dividing header & record and the two CRs postfixinf the content
+    # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
     local TFILE=$(mktemp)
 cat > "$TFILE" <<EOF    
 HTTP/1.1 200 OK${CR}
@@ -119,7 +129,7 @@ WARC/1.0${CR}
 WARC-Type: response${CR}
 WARC-Target-URI: ${URL}${CR}
 WARC-Date: ${TIMESTAMP}${CR}
-WARC-Payload-Digest: $(sha1_32 "$TFILE")${CR}
+WARC-Payload-Digest: $(sha1_32_string "$TWEET")${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/http; msgtype=response; format=twitter_tweet${CR}
 Content-Length: $(wc -c < ${TFILE})${CR}
