@@ -26,6 +26,7 @@ fi
 : ${WARC_OPERATOR:="The Royal Danish Library"}
 : ${WARC_SOFTWARE:="Homebrew experimental"}
 : ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
+: ${FORCE:="false"}  # If false, any existing WARC-representation is not overwritten
 popd > /dev/null
 
 usage() {
@@ -106,7 +107,7 @@ print_tweet_warc_entry() {
     local TFILE=$(mktemp)
 cat > "$TFILE" <<EOF    
 HTTP/1.1 200 OK${CR}
-Content-Type: application/json${CR}
+Content-Type: application/json; format=twitter_tweet${CR}
 Content-Length: $(bytes "$TWEET")${CR}
 X-WARC-signal: twitter_tweet${CR}
 ${CR}
@@ -166,7 +167,12 @@ warc_all() {
         fi
         WARC="${WARC}.warc"
         if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
-            echo " - Skipping $TFILE as it has already been converted"
+            if [[ "true" == "$FORCE" ]]; then
+                echo " - Overwriting existing WARC for $TFILE as FORCE=true"
+                warc_single "$TFILE" "$WARC"
+            else
+                echo " - Skipping $TFILE as it has already been converted"
+            fi
         else
             warc_single "$TFILE" "$WARC"
         fi
