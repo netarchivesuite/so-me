@@ -22,7 +22,7 @@ if [[ -s "twitter.conf" ]]; then
     source twitter.conf
 fi
 
-# http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinfo
+# http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinof
 : ${WARC_OPERATOR:="The Royal Danish Library"}
 : ${WARC_SOFTWARE:="Homebrew experimental"}
 popd > /dev/null
@@ -121,7 +121,7 @@ WARC-Target-URI: ${URL}${CR}
 WARC-Date: ${TIMESTAMP}${CR}
 WARC-Payload-Digest: $(sha1_32 "$TFILE")${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
-Content-Type: application/http; msgtype=response${CR}
+Content-Type: application/http; msgtype=response; format=twitter_tweet${CR}
 Content-Length: $(wc -c < ${TFILE})${CR}
 ${CR}
 EOF
