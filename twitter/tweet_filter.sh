@@ -15,7 +15,8 @@
 ###############################################################################
 
 pushd ${BASH_SOURCE%/*} > /dev/null
-if [[ -s "harvest_resources.conf" ]]; then
+if [[ -s "twitter.conf" ]]; then
+    echo "Sourcing twitter"
     source twitter.conf
 fi
 : ${TAGS:="$1"}
@@ -24,6 +25,8 @@ fi
 : ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
+: ${TWARC:="$(which twarc)"}
+echo "Resolved twarc: $TWARC"
 popd > /dev/null
 
 usage() {
@@ -89,7 +92,7 @@ pack_tweets() {
 
 filter_tweets() {
     echo "Filtering tweets for $RUNTIME seconds to $OUT"
-    timeout $RUNTIME twarc filter "$TAGS" > $OUT
+    timeout $RUNTIME $TWARC filter "$TAGS" > $OUT
 }
 
 ###############################################################################
