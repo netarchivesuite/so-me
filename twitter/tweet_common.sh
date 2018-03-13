@@ -32,7 +32,12 @@ pack_json() {
     local LAST=$(tail -n 1 $OUT | jq . 2> /dev/null)
     if [[ "." == ".$LAST" ]]; then
         echo "Compressing $OUT sans last line"
-        head -n -1 $OUT | gzip > ${OUT}.gz
+        head -n -1 $OUT | gzip > "${OUT}.gz"
+        if [[ ! -s "${OUT}.gz" ]]; then
+            >&2 echo "Error: Could not compress ${OUT}. Maybe there is no room left on the device?"
+            return
+        fi
+        rm "$OUT"
     else
         echo "Compressing $OUT"
         gzip $OUT
