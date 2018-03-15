@@ -1,23 +1,25 @@
 #!/usr/bin/env python2
+#coding: utf-8
+# https://github.com/netarchivesuite/so-me
 
-import sys
-import jodel_api
-import json
-import time
+import base64
 import datetime
 from datetime import date
 from datetime import datetime
+import hashlib
+import jodel_api
+import json
+from subprocess import call
+import sys
+import time
 import uuid
-
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 
 
 ###############################################################################
 # CONFIG
 ###############################################################################
 
-NUM_OF_RECENT_POSTS_TO_HARVEST = 10
+NUM_OF_RECENT_POSTS_TO_HARVEST = 50
 SECONDS_BETWEEN_EACH_HARVEST = 10
 
 
@@ -29,10 +31,13 @@ class WronglyFormattedJodelTime(Exception):
     pass
 
 
-def convert_to_json(post_details):
-    post_details_as_json = ''
-    # TODO
-    return post_details_as_json
+def get_sha1_base32(inner_content):
+    sha1_eater = hashlib.sha1()
+    sha1_eater.update(inner_content)
+
+    digest = sha1_eater.digest()
+    sha1_in_base32 = base64.b32encode(digest)
+    return sha1_in_base32
 
 
 def get_updated_at_date(post_details):
@@ -43,6 +48,16 @@ def get_updated_at_date(post_details):
     return d[0:19] + 'Z'
 
 
+def get_warc_inner_record(inner_content):
+    warc_rec = "HTTP/1.1 200 OK\r\n"
+    warc_rec += "Content-Type: application/json; format=jodel_thread\r\n"
+    warc_rec += "Content-Length: " + str(len(inner_content)) + "\r\n"
+    warc_rec += "X-WARC-signal: jodel_thread\r\n"
+    warc_rec += "\r\n"
+    warc_rec += inner_content
+    return warc_rec
+
+
 class Warc:
     def __init__(self):
         # Bulk is eeeeeverything that is in a warc file
@@ -50,52 +65,100 @@ class Warc:
         return
 
 
-    def append_warc_header(self):
+    def append_warc_header(self, harvest_start_time_utc):
         self.bulk += "WARC/1.0\r\n"
         self.bulk += "WARC-Type: warcinfo\r\n"
 
-        self.bulk += "WARC-date: "
-        right_now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-        self.bulk += str(right_now) + "\r\n"
-
+        self.bulk += "WARC-date: " + str(harvest_start_time_utc) + "\r\n"
         self.bulk += "WARC-Record-ID: <urn:uuid:" + str(uuid.uuid4()) + ">\r\n"
-
         self.bulk += "Content-Type: application/warc-fields\r\n"
 
         self.bulk += "Content-Length: 73\r\n"
         self.bulk += "\r\n"
-        self.bulk += "#\r\n"
+        self.bulk += "# \r\n"
         self.bulk += "operator: The Royal Danish Library\r\n"
         self.bulk += "software: Homebrew experimental\r\n"
+        self.bulk += "\r\n"
+        self.bulk += "\r\n"
         return
 
 
-    def append_thread(self, post_details):
-        self.bulk += "\r\n"
-        self.bulk += "\r\n"
+    def append_thread(self, post_details, share_url, lat, lng, city):
+        # Inject latitude, longitude, and city into the Python datastructure
+        post_details['harvester_info'] = {'latitude':str(lat),
+                'longitude':str(lng), 'city':str(city)}
 
         self.bulk += "WARC/1.0\r\n"
         self.bulk += "WARC-Type: response\r\n"
 
-        # TODO
-        self.bulk += "WARC-Target-URI: http://TODO-INSERT-HERE.com\r\n"
+        self.bulk += "WARC-Target-URI: " + str(share_url[1]['url']) + "\r\n"
 
         self.bulk += "WARC-Date: "
-        self.bulk += get_updated_at_date(post_details) + "\r\n"
+        self.bulk += str(get_updated_at_date(post_details)) + "\r\n"
 
+        self.bulk += "WARC-Payload-Digest: "
+        voorhees = json.dumps(post_details) + "\n"
+        self.bulk += "sha1:" + get_sha1_base32(voorhees) + "\r\n"
 
-        self.bulk += ""
+        self.bulk += "WARC-Record-ID: <urn:uuid:" + str(uuid.uuid4()) + ">\r\n"
+        self.bulk += "Content-Type: application/http; msgtype=response\r\n"
+
+        warc_rec = get_warc_inner_record(voorhees)
+        self.bulk += "Content-Length: " + str(len(warc_rec)) + "\r\n"
         self.bulk += "\r\n"
-
-
-        # TODO
+        self.bulk += warc_rec
+        self.bulk += "\r\n"
+        self.bulk += "\r\n"
         return
 
 
-    def output_to_stdout(self):
-        print self.bulk
-        # TODO
+    def dump_to_file(self, city, harvest_start_time_for_filename):
+        assert(type(self.bulk) == str)
+
+        time = str(harvest_start_time_for_filename)
+
+        filepath = "harvests/jodel_" + city + "_" + time + ".warc"
+        file = open(filepath, "w")
+        file.write(self.bulk)
+        file.close()
         return
+
+
+class ImageUrlList:
+    def __init__(self):
+        # Image urls, each on a separate line
+        self.image_urls = ''
+        self.we_got_images = False
+        return
+
+
+    def append_image_urls(self, post_details):
+        if str(post_details['details']['image_approved']).lower() == "true":
+            # OJ-post has an image
+            url = "http:" + post_details['details']['image_url']
+            self.image_urls += str(url) + "\n"
+            self.we_got_images = True
+
+        replies = post_details['replies']
+        for reply in replies:
+            if str(reply['image_approved']).lower() == "true":
+                # Reply has an image
+                url = "http:" + reply['image_url']
+                self.image_urls += str(url) + "\n"
+                self.we_got_images = True
+        return
+
+
+    def dump_to_file(self, city, harvest_start_time_for_filename):
+        assert(type(self.image_urls) == str)
+
+        time = str(harvest_start_time_for_filename)
+
+        filebase = "jodelimages_" + city + "_" + time
+        file = open("harvests/images/" + filebase + ".txt", "w")
+        file.write(self.image_urls)
+        file.close()
+        return filebase
 
 
 ###############################################################################
@@ -126,7 +189,18 @@ alive_posts = {}
 
 while True:
     warc = Warc()
-    warc.append_warc_header()
+    image_url_list = ImageUrlList()
+
+    # Start generation of warc file
+    harvest_start_time_utc = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    warc.append_warc_header(harvest_start_time_utc)
+    threads_were_added_to_this_warc = False
+
+    # Get harvest start-time for filename
+    t = harvest_start_time_utc  # Example: "2018-03-13T11:27:29Z"
+    yyyymmdd = t[0:4] + t[5:7] + t[8:10]
+    hhmmss = t[11:13] + t[14:16] + t[17:19]
+    harvest_start_time_for_filename = yyyymmdd + "_" + hhmmss
 
     # Get most recent posts
     recent = account.get_posts_recent(skip=0,
@@ -161,29 +235,30 @@ while True:
         next_alive_posts[post_id] = updated_at
 
         if post_details is not None:
-            # Export the thread as json
-            #pp.pprint(post_details)
-            warc.append_thread(post_details)
-            print('..................')
+            share_url = account.get_share_url(post_id)
+            # Add the jodel-thread (as a warc-record) to current warc file
+            warc.append_thread(post_details, share_url, lat, lng, city)
+            threads_were_added_to_this_warc = True
 
-            # FOR TESTING
-            msg = post['message']
-            pp.pprint(msg[:10])
-            #pp.pprint(post['child_count'])
+            # Collect any image-urls in the thread to harvest at the end
+            image_url_list.append_image_urls(post_details)
 
-    warc.output_to_stdout()
+    # Finish and export current warc file
+    if threads_were_added_to_this_warc:
+        warc.dump_to_file(city, harvest_start_time_for_filename)
 
+        # Harvest collected images
+        if image_url_list.we_got_images:
+            filebase = image_url_list.dump_to_file(city,
+                    harvest_start_time_for_filename)
+            call(["cd", "harvests/images"])
+            call(["wget", "-q", "--level=0", "--warc-cdx", "--page-requisites",
+                "--warc-file=" + "harvests/images/" + filebase,
+                "--warc-max-size=1G", "-i",
+                "harvests/images/" + filebase + ".txt"])
+            # TODO: cleanup garbage-files generated by wget
+
+    # Prepare for next harvest
     alive_posts = next_alive_posts
-    print('--------------------')
     time.sleep(SECONDS_BETWEEN_EACH_HARVEST)
-
-
-
-
-
-# Se https://docs.python.org/2/tutorial/datastructures.html
-#    https://github.com/netarchivesuite/so-me
-
-###voorhees = json.dumps(recent)
-###print voorhees
 
