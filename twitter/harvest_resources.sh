@@ -5,7 +5,6 @@
 # The tool uses wget to do all that
 #
 # CONSIDER: This skips links to tweets, which might not be the correct action
-# TODO: Prioritize images
 
 ###############################################################################
 # CONFIG
@@ -19,6 +18,7 @@ fi
 : ${QUOTA_MAX:="500"} # Maximum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_PER_TWEET:="10"} # MB
 : ${TIMEOUT:="60"}
+: ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
 popd > /dev/null
 
 usage() {
@@ -42,6 +42,17 @@ check_parameters() {
 # FUNCTIONS
 ################################################################################
 
+prioritize() {
+    local LINKS="$1"
+
+    echo "   - Priritizing images above all else in $LINKS"
+    local T_I=$(mktemp)
+    local T_R=$(mktemp)
+    grep -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_I"
+    grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
+    cat "$T_I" "$T_R" > "$LINKS"
+}
+
 harvest() {
     local TFILE="$1"
     local WARC="$2"
@@ -56,6 +67,7 @@ harvest() {
     echo " - Resolving resources for $TFILE" | tee -a "$LOG"
     echo "   - Extracting links to $LINKS" | tee -a "$LOG"
     zcat -f "$TFILE" | jq -r '..|.expanded_url?, .media_url?, .media_url_https?, .profile_image_url_https?, .profile_background_image_url_https?, .profile_banner_url?' | grep -v 'null' | grep -v '^$' | grep -v '.*twitter.com/.*/status/.*' | sort | uniq > "$LINKS"
+    prioritize "$LINKS"
     local TCOUNT=$(wc -l < "$LINKS")
     local Q=$(( QUOTA_PER_TWEET * TCOUNT ))
     if [[ "$Q" -gt "$QUOTA_MAX" ]]; then
