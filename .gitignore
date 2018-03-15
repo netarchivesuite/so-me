@@ -1,1 +1,6 @@
 .DS_Store
+*.warc
+*.warc.gz
+*.json.gz
+*.log
+*~
