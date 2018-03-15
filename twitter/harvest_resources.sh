@@ -42,15 +42,35 @@ check_parameters() {
 # FUNCTIONS
 ################################################################################
 
+# Input: File with links
 prioritize() {
     local LINKS="$1"
 
-    echo "   - Priritizing images above all else in $LINKS"
+    echo "   - Prioritizing images above all else in $LINKS"
     local T_I=$(mktemp)
     local T_R=$(mktemp)
     grep -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_I"
     grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
     cat "$T_I" "$T_R" > "$LINKS"
+    rm "$T_I" "$T_R"
+}
+
+# Twitter profile images as referred in the tweet JSON is in the form
+# https://pbs.twimg.com/profile_images/<numeric_userid>/i4-KEH9h_normal.jpg
+# Removing the '_normal'-part yields the full-size image
+#
+# Note: The order of the links will be changed. Call this before prioritize()
+#
+# Input: File with links
+expand_large_profile_images() {
+    local LINKS="$1"
+
+    echo "   - Expanding profile images to full size"
+    local T=$(mktemp)
+    grep '.*pbs.twimg.com/profile_images/[0-9]*/.*_normal.[a-zA-Z]\+$' "$LINKS" | sed 's/_normal\(.[a-zA-Z]\+$\)/\1/' > "$T"
+    cat "$LINKS" >> "$T"
+    sort < "$T" | uniq > "$LINKS"
+    rm "$T"
 }
 
 harvest() {
@@ -67,6 +87,7 @@ harvest() {
     echo " - Resolving resources for $TFILE" | tee -a "$LOG"
     echo "   - Extracting links to $LINKS" | tee -a "$LOG"
     zcat -f "$TFILE" | jq -r '..|.expanded_url?, .media_url?, .media_url_https?, .profile_image_url_https?, .profile_background_image_url_https?, .profile_banner_url?' | grep -v 'null' | grep -v '^$' | grep -v '.*twitter.com/.*/status/.*' | sort | uniq > "$LINKS"
+    expand_large_profile_images "$LINKS"
     prioritize "$LINKS"
     local TCOUNT=$(wc -l < "$LINKS")
     local Q=$(( QUOTA_PER_TWEET * TCOUNT ))
