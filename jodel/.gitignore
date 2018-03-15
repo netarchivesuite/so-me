@@ -1,0 +1,3 @@
+.DS_Store
+*.warc
+accounts/*-account-data.sh
