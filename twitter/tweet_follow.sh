@@ -81,7 +81,7 @@ resolve_user_profiles() {
 follow_users() {
     local USER_COUNT=$(tr ',' '\n' <<< "$IDS" | wc -l)
     echo " - Filtering tweets from $USER_COUNT users for $RUNTIME seconds to $OUT_TWEETS"
-    timeout $RUNTIME twarc filter --follow "$IDS" > $OUT_TWEETS
+    timeout $RUNTIME $TWARC filter --follow "$IDS" > $OUT_TWEETS
 }
 
 ###############################################################################
