@@ -1,14 +1,20 @@
 #!/usr/bin/env python2
 
 import jodel_api
+import sys
 
-# TODO take these as input to this script
-lat, lng, city = 56.15, 10.216667, "Aarhus"
+# Read input parameters
+lat = sys.argv[1]
+lng = sys.argv[2]
+city = sys.argv[3]
+
+print "Latitude: " + lat
+print "Longitude: " + lng
+print "City: " + city
 
 a = jodel_api.JodelAccount(lat=lat, lng=lng, city=city)
 account_data = a.get_account_data()
 
-# TODO take dir/filename below as input to this script
 # Generate and print bash-sourcable variable-definitions to stdout
 with open("accounts/Aarhus-account-data.sh", "w") as f:
     print >>f, "latitude='" + str(lat) + "'"
