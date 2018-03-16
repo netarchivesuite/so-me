@@ -84,7 +84,8 @@ class Warc:
     def append_thread(self, post_details, share_url, lat, lng, city):
         # Inject latitude, longitude, and city into the Python datastructure
         post_details['harvester_info'] = {'latitude':str(lat),
-                'longitude':str(lng), 'city':str(city)}
+                'longitude':str(lng), 'city':str(city),
+                'share_url':str(share_url[1]['url'])}
 
         self.bulk += "WARC/1.0\r\n"
         self.bulk += "WARC-Type: response\r\n"
