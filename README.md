@@ -23,7 +23,16 @@ Tweets are harvested using [twarc](https://github.com/DocNow/twarc), while resou
 
 ### Basic install
 
-Install webarchive-discovery
+Tools
+```
+sudo apt-get install twarc jq wget
+```
+Visit [twarc](https://github.com/DocNow/twarc) and follow the instructions for acquiring and configuring Twitter API keys for twarc. It takes a few minuts and requires a Twitter account. Without this, no Twitter harvest.
+
+Ensure that Java 1.8 is installed.
+
+
+webarchive-discovery
 ```
 git clone https://github.com/netarchivesuite/webarchive-discovery.git
 pushd webarchive-discovery/
@@ -48,15 +57,32 @@ solrscripts/cloud_sync.sh 7.2.1 so-me_solr7_config/discovery/conf/ so-me.conf so
 ```
 There should now be a Solr running with an empty `some`-collection. Verify by visiting [http://localhost:9000/solr/#/some/collection-overview](http://localhost:9000/solr/#/some/collection-overview).
 
+
+Tomcat (for running SolrWayback)
+```
+curl 'http://mirrors.dotsrc.org/apache/tomcat/tomcat-8/v8.5.29/bin/apache-tomcat-8.5.29.tar.gz' | tar -xzo 
+mv apache-tomcat-8.5.29 tomcat
+tomcat/bin/startup.sh
+```
+There should now be a tomcat running. Verify by visiting [http://localhost:8080/](http://localhost:8080/).
+
+
 SolrWayback
 ```
 git clone https://github.com/netarchivesuite/solrwayback.git
 pushd solrwayback
 mvn package -DskipTests
+popd
 
+cp solrwayback/src/test/resources/properties/solrwayback.properties ~/
+sed -e 's%proxy.port=.*%proxy.port=9010%' -e 's%solr.server=.*%solr.server=http://localhost:9000/solr/some/%' -e 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:8080/solrwayback/%' -i ~/solrwayback.properties 
+
+cp solrwayback/target/test-classes/properties/solrwaybackweb.properties ~/
+sed 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:8080/solrwayback/%' -i ~/solrwaybackweb.properties 
+
+cp solrwayback/target/solrwayback-3.1-SNAPSHOT.war tomcat/webapps/solrwayback.war
 ```
-
-[ ] Finish guide
+SolrWayback should now be running in Tomcat. Verify by visiting [http://localhost:8080/solrwayback/](http://localhost:8080/solrwayback/) and issuing a search for `*:*` which should give 0 results and no errors.
 
 
 ### Twitter data
@@ -89,4 +115,10 @@ You now have `equidae.warc` and `equidae.resources.warc.gz`.
 
 [ ] Write guide
 
+### Index WARCs
+
+```
+java -Xmx1g -jar webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar* -s http://localhost:9000/solr/some equidae*.warc*
+```
+Solr should now contain tweets, jodels, images and linked resources. Verify by issuing a search in [http://localhost:8080/solrwayback/](http://localhost:8080/solrwayback/).
 
