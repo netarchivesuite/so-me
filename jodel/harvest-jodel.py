@@ -1,11 +1,9 @@
 #!/usr/bin/env python2
-#coding: utf-8
 # https://github.com/netarchivesuite/so-me
 
 import base64
 import datetime
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime, timedelta
 import hashlib
 import jodel_api
 import json
@@ -191,8 +189,10 @@ while True:
     warc = Warc()
     image_url_list = ImageUrlList()
 
+    start_time = datetime.utcnow()
+
     # Start generation of warc file
-    harvest_start_time_utc = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    harvest_start_time_utc = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
     warc.append_warc_header(harvest_start_time_utc)
     threads_were_added_to_this_warc = False
 
@@ -247,8 +247,8 @@ while True:
     if threads_were_added_to_this_warc:
         warc.dump_to_file(city, harvest_start_time_for_filename)
 
-        # Harvest collected images
         if image_url_list.we_got_images:
+            # Harvest collected images
             call(["bash", '-c',
                 'mkdir ./harvests/image-temp/wget-warc-temp 2>/dev/null'])
             filebase = image_url_list.dump_to_file(city,
@@ -268,10 +268,15 @@ while True:
                 'rm -R ./harvests/image-temp/wget-warc-temp/* 2>/dev/null'])
             call(["bash", '-c',
                 'rm ./harvests/image-temp/*_images.txt 2>/dev/null'])
+
             call(["bash", '-c',
                 'mv ./harvests/image-temp/*.warc.gz ./harvests/'])
 
-    # Prepare for next harvest
+    if (datetime.utcnow() - start_time) > timedelta(1):
+        # 24 hrs have passed since we started harvesting, so die
+        sys.exit()
+
+    # Otherwise, prepare for next harvest
     alive_posts = next_alive_posts
     time.sleep(SECONDS_BETWEEN_EACH_HARVEST)
 
