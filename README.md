@@ -38,7 +38,8 @@ git clone https://github.com/netarchivesuite/webarchive-discovery.git
 pushd webarchive-discovery/
 git checkout solrconfig
 cp -r warc-indexer/src/main/solr/solr7/ ../so-me_solr7_config
-git checkout some
+git checkout som
+sed 's%"normalise" *: *[a-z]\+,%"normalise": true,%' -i warc-indexer/src/main/resources/reference.conf 
 mvn package -DskipTests
 popd
 ```
@@ -60,8 +61,8 @@ There should now be a Solr running with an empty `some`-collection. Verify by vi
 
 Tomcat (for running SolrWayback)
 ```
-curl 'http://mirrors.dotsrc.org/apache/tomcat/tomcat-8/v8.5.29/bin/apache-tomcat-8.5.29.tar.gz' | tar -xzo 
-mv apache-tomcat-8.5.29 tomcat
+mkdir tomcat
+curl 'http://mirrors.dotsrc.org/apache/tomcat/tomcat-8/v8.5.29/bin/apache-tomcat-8.5.29.tar.gz' | tar -xzo --strip-components=1 -C tomcat
 tomcat/bin/startup.sh
 ```
 There should now be a tomcat running. Verify by visiting [http://localhost:8080/](http://localhost:8080/).
@@ -117,6 +118,7 @@ You now have `equidae.warc` and `equidae.resources.warc.gz`.
 
 ### Index WARCs
 
+Index the WARCs harvested from Twitter & Jodel with
 ```
 java -Xmx1g -jar webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar* -s http://localhost:9000/solr/some equidae*.warc*
 ```
