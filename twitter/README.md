@@ -54,3 +54,7 @@ We use [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) for 
 ## SolrWayback
 
 [Solrwayback](https://github.com/netarchivesuite/solrwayback) is out-of-the-box capable of searching and showing basic information, such as a title and a date, for arbitrary content from a Solr backend with a schema compatible with `webarchive-discovery`. To get a more usable presentation, `Solrwayback` should be extended with explicit support for Twitter tweets & profiles.
+
+## Misc. notes
+
+There is no reply-count in the free Twitter API. There seems to be in the premium API: https://twittercommunity.com/t/reply-count/78367/11
