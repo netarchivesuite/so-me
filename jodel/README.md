@@ -3,8 +3,6 @@
 
 ## To create a new (city-specific) Jodel-account for harvesting
 
-* CREATING NEW ACCOUNTS CURRENTLY DOES NOT WORK - because of an app-update. It's fixable, but we need more time to do this *
-
 cd jodel
 ./get-new-account.py <latitude> <longitude> <cityname>
 
@@ -17,10 +15,9 @@ cd jodel
 
 ## To harvest cities for an hour
 
-* This is currently set up to harvest only Aarhus, via the Aarhus-account that we have, which is not uploaded to github *
-
 cd jodel
 ./harvest-jodel.sh
 
-Details of how the harvest happens can be configured in the config-section at the start of harvet-jodel.py
+New cities must be added to harvest-jodel.sh
+Details of how the harvest happens can be configured in the config-section at the start of harvest-jodel.py
 
