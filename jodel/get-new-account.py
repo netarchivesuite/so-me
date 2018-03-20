@@ -16,7 +16,7 @@ a = jodel_api.JodelAccount(lat=lat, lng=lng, city=city)
 account_data = a.get_account_data()
 
 # Generate and print bash-sourcable variable-definitions to stdout
-with open("accounts/Aarhus-account-data.sh", "w") as f:
+with open("accounts/" + city + "-account-data.sh", "w") as f:
     print >>f, "latitude='" + str(lat) + "'"
     print >>f, "longitude='" + str(lng) + "'"
     print >>f, "city='" + city + "'"

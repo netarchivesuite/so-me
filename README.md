@@ -38,12 +38,13 @@ git clone https://github.com/netarchivesuite/webarchive-discovery.git
 pushd webarchive-discovery/
 git checkout solrconfig
 cp -r warc-indexer/src/main/solr/solr7/ ../so-me_solr7_config
-git checkout som
+git checkout some
+git merge origin/WARCTargetURI -m "Custom build"
 sed 's%"normalise" *: *[a-z]\+,%"normalise": true,%' -i warc-indexer/src/main/resources/reference.conf 
 mvn package -DskipTests
 popd
 ```
-There should now be a JAR redy for use. Verify with
+There should now be a JAR ready for use. Verify with
 ```
 ll  webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar*
 ```

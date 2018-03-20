@@ -1,26 +1,47 @@
 # Harvest of Jodel
 
+## Basic setup
+
+Install Python 2, pip 2 and Python setuptools (`sudo pip install -U setuptools`).
+
+Install the Jodel API
+```
+pip2 install jodel_api
+```
+
+If the scripts stop working, upgrade the Jodel API with
+```
+pip2 install --upgrade jodel_api
+```
+
 
 ## To create a new (city-specific) Jodel-account for harvesting
 
-* CREATING NEW ACCOUNTS CURRENTLY DOES NOT WORK - because of an app-update. It's fixable, but we need more time to do this *
-
+```
 cd jodel
 ./get-new-account.py <latitude> <longitude> <cityname>
+```
 
+[Google Maps](https://maps.google.com) can provide coordinates: Find the location, right click and select _"What's here?"_ - the coordinates are shown at the bottom of the window.
 
 ### Example:
 
+```
 cd jodel
 ./get-new-account.py '56.15' '10.216667' 'Aarhus'
+```
 
 
 ## To harvest cities for an hour
 
-* This is currently set up to harvest only Aarhus, via the Aarhus-account that we have, which is not uploaded to github *
+Edit the script `harvest-jodel.sh` to use the created Jodel account and start it
 
+```
 cd jodel
 ./harvest-jodel.sh
+```
 
-Details of how the harvest happens can be configured in the config-section at the start of harvet-jodel.py
+The results are stored in the `harvests`-folder.
+
+Details of how the harvest happens can be configured in the config-section at the start of harvest-jodel.py
 
