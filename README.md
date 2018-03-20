@@ -104,7 +104,7 @@ Convert the Twitter JSON to WARC
 twitter/tweets2warc.sh equidae.json
 ```
 
-Harvest the linked resources
+Harvest the linked resources (might take 10 minutes or so)
 ```
 twitter/harvest_resources.sh equidae.json
 ```
