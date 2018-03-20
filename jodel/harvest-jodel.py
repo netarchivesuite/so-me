@@ -85,12 +85,12 @@ class Warc:
         # Inject latitude, longitude, and city into the Python datastructure
         post_details['harvester_info'] = {'latitude':str(lat),
                 'longitude':str(lng), 'city':str(city),
-                'share_url':str(share_url[1]['url'])}
+                'share_url':str(share_url)}
 
         self.bulk += "WARC/1.0\r\n"
         self.bulk += "WARC-Type: response\r\n"
 
-        self.bulk += "WARC-Target-URI: " + str(share_url[1]['url']) + "\r\n"
+        self.bulk += "WARC-Target-URI: " + str(share_url) + "\r\n"
 
         self.bulk += "WARC-Date: "
         self.bulk += str(get_updated_at_date(post_details)) + "\r\n"
@@ -237,7 +237,7 @@ while True:
         next_alive_posts[post_id] = updated_at
 
         if post_details is not None:
-            share_url = account.get_share_url(post_id)
+            share_url = 'https://share.jodel.com/post?postId=' + post_id
             # Add the jodel-thread (as a warc-record) to current warc file
             warc.append_thread(post_details, share_url, lat, lng, city)
             threads_were_added_to_this_warc = True
