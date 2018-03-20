@@ -191,10 +191,10 @@ while True:
     warc = Warc()
     image_url_list = ImageUrlList()
 
-    start_time = datetime.utcnow()
+    start_time = time.time()
 
     # Start generation of warc file
-    harvest_start_time_utc = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    harvest_start_time_utc = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     warc.append_warc_header(harvest_start_time_utc)
     threads_were_added_to_this_warc = False
 
@@ -281,8 +281,8 @@ while True:
             call(["bash", '-c',
                 'mv ./harvests/image-temp-' + city + '/*.warc.gz ./harvests/'])
 
-    if (datetime.utcnow() - start_time) > timedelta(1):
-        # 24 hrs have passed since we started harvesting, so die
+    if (time.time() - start_time) > 60*60:
+        # An hour has passed since we started harvesting, so die
         sys.exit()
 
     # Otherwise, prepare for next harvest
