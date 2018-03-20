@@ -19,6 +19,7 @@ fi
 : ${QUOTA_PER_TWEET:="10"} # MB
 : ${TIMEOUT:="60"}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
+: ${IMAGES_ONLY:="false"} # If true, only images are harvested)
 popd > /dev/null
 
 usage() {
@@ -51,7 +52,12 @@ prioritize() {
     local T_R=$(mktemp)
     grep -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_I"
     grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
-    cat "$T_I" "$T_R" > "$LINKS"
+    if [[ "$IMAGES_ONLY" == "true" ]]; then
+        echo "   - Keeping only images at IMAGES_ONLY==true"
+        cat "$T_I" > "$LINKS"
+    else
+        cat "$T_I" "$T_R" > "$LINKS"
+    fi
     rm "$T_I" "$T_R"
 }
 
