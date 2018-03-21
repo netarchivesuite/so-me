@@ -89,7 +89,7 @@ SolrWayback should now be running in Tomcat. Verify by visiting [http://localhos
 
 ### Twitter data
 
-Full guide in [twitter README](twitter/README.md).
+Full guide in [Twitter README](twitter/README.md).
 
 Get some JSON tweets by either searching backwards in time
 ```
@@ -115,13 +115,13 @@ You now have `equidae.warc` and `equidae.resources.warc.gz`.
 
 ### Jodel
 
-[ ] Write guide
+Follow the guide in in [Jodel README](jodel/README.md).
 
 ### Index WARCs
 
 Index the WARCs harvested from Twitter & Jodel with
 ```
-java -Xmx1g -jar webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar* -s http://localhost:9000/solr/some equidae*.warc*
+java -Xmx1g -jar webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar* -s http://localhost:9000/solr/some equidae*.warc* jodel/harvests/*.warc*
 ```
 Solr should now contain tweets, jodels, images and linked resources. Verify by issuing a search in [http://localhost:8080/solrwayback/](http://localhost:8080/solrwayback/).
 
