@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Make the newest version of the jodel-api available
+source jodel-virtualenv/bin/activate
+pip install --upgrade pip
+pip install --update -r requirements.txt
+
+
 # harvest-jodel.py will run the harvester for 1 hour. Repeat with cron.
 
 
@@ -14,4 +20,9 @@ source configs/Kbh-config.sh
 
 
 # TODO add more cities, by repeating the two lines above for each city
+
+
+
+
+deactivate
 

@@ -19,7 +19,7 @@ pip2 install --upgrade jodel_api
 
 ```
 cd jodel
-./get-new-account.py <latitude> <longitude> <cityname>
+./get-new-account.sh <latitude> <longitude> <cityname>
 ```
 
 [Google Maps](https://maps.google.com) can provide coordinates: Find the location, right click and select _"What's here?"_ - the coordinates are shown at the bottom of the window.
@@ -28,7 +28,7 @@ cd jodel
 
 ```
 cd jodel
-./get-new-account.py '56.15' '10.216667' 'Aarhus'
+./get-new-account.sh '56.15' '10.216667' 'Aarhus'
 ```
 
 
