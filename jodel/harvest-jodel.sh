@@ -3,7 +3,7 @@
 # Make the newest version of the jodel-api available
 source jodel-virtualenv/bin/activate
 pip install --upgrade pip
-pip install --update -r requirements.txt
+pip install --upgrade -r requirements.txt
 
 
 # harvest-jodel.py will run the harvester for 1 hour. Repeat with cron.
