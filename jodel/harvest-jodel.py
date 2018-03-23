@@ -14,14 +14,6 @@ import uuid
 
 
 ###############################################################################
-# CONFIG
-###############################################################################
-
-NUM_OF_RECENT_POSTS_TO_HARVEST = 50
-SECONDS_BETWEEN_EACH_HARVEST = 10
-
-
-###############################################################################
 # FUNCTIONS & CLASSES
 ###############################################################################
 
@@ -174,6 +166,12 @@ expiration_date = sys.argv[5]
 refresh_token = sys.argv[6]
 distinct_id = sys.argv[7]
 device_uid = sys.argv[8]
+num_of_recent_posts_to_harvest = int(sys.argv[9])
+seconds_between_each_harvest = float(sys.argv[10])
+
+# TODO instead, make it so that this program can be called as:
+# ./harvest-jodel.py configs/Aarhus-config.sh "$num_of_recent_posts_to_harvest" "$seconds_between_each_harvest"
+# in that way making harvest-jodel.sh simpler.
 
 account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city,
         access_token=access_token, expiration_date=expiration_date,
@@ -206,7 +204,7 @@ while True:
 
     # Get most recent posts
     recent = account.get_posts_recent(skip=0,
-            limit=NUM_OF_RECENT_POSTS_TO_HARVEST, after=None, mine=False,
+            limit=num_of_recent_posts_to_harvest, after=None, mine=False,
             hashtag=None, channel=None)
     recent_posts = recent[1]['posts']
 
@@ -287,5 +285,5 @@ while True:
 
     # Otherwise, prepare for next harvest
     alive_posts = next_alive_posts
-    time.sleep(SECONDS_BETWEEN_EACH_HARVEST)
+    time.sleep(seconds_between_each_harvest)
 

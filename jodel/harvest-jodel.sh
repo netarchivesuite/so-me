@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
-source accounts/Aarhus-account-data.sh
-
-# Run jodel-harvester for 1 hour
-./harvest-jodel.py "$latitude" "$longitude" "$city" "$access_token" "$expiration_date" "$refresh_token" "$distinct_id" "$device_uid" &
+# harvest-jodel.py will run the harvester for 1 hour. Repeat with cron.
 
 
-source accounts/Kbh-account-data.sh
+source configs/Aarhus-config.sh
 
-# Run jodel-harvester for 1 hour
-./harvest-jodel.py "$latitude" "$longitude" "$city" "$access_token" "$expiration_date" "$refresh_token" "$distinct_id" "$device_uid" &
+./harvest-jodel.py "$latitude" "$longitude" "$city" "$access_token" "$expiration_date" "$refresh_token" "$distinct_id" "$device_uid" "$num_of_recent_posts_to_harvest" "$seconds_between_each_harvest" &
+
+
+source configs/Kbh-config.sh
+
+./harvest-jodel.py "$latitude" "$longitude" "$city" "$access_token" "$expiration_date" "$refresh_token" "$distinct_id" "$device_uid" "$num_of_recent_posts_to_harvest" "$seconds_between_each_harvest" &
 
 
 # TODO add more cities, by repeating the two lines above for each city
