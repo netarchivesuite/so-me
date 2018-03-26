@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # Make the newest version of the jodel-api available
-source jodel-virtualenv/bin/activate
-pip install --upgrade pip
-pip install --upgrade -r requirements.txt
+source jodel-virtualenv/bin/activate >/dev/null
+pip install --upgrade pip >/dev/null
+pip install --upgrade -r requirements.txt >/dev/null
 
 
 # harvest-jodel.py will run the harvester for 1 hour. Repeat with cron.
@@ -24,5 +24,5 @@ source configs/Kbh-config.sh
 
 
 
-deactivate
+deactivate >/dev/null
 
