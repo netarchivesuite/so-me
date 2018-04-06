@@ -178,6 +178,12 @@ account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city,
         refresh_token=refresh_token, distinct_id=distinct_id,
         device_uid=device_uid, is_legacy=True)
 
+if expiration_date <= int(time.time()):
+    # Current Unix epoch time is after expiration date, so refresh
+    refresh_result = account.refresh_access_token()
+    access_token = refresh_result[1]['access_token']
+    expiration_date = refresh_result[1]['expiration_date']
+
 # Dictionary with post_id as key and timestamp as value.
 # Alive posts are posts that had not been deleted(via downvotes/deletion) or
 # been pushed out through the bottom of our "main-feed-harvest-window" when we
