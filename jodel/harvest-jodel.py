@@ -178,7 +178,8 @@ account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city,
         refresh_token=refresh_token, distinct_id=distinct_id,
         device_uid=device_uid, is_legacy=True)
 
-if expiration_date <= int(time.time()):
+unix_time_now = int(calendar.timegm(time.gmtime()))
+if expiration_date <= unix_time_now:
     # Current Unix epoch time is after expiration date, so refresh
     refresh_result = account.refresh_access_token()
     access_token = refresh_result[1]['access_token']
