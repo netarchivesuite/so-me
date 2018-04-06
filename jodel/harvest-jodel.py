@@ -173,6 +173,9 @@ seconds_between_each_harvest = float(sys.argv[10])
 # ./harvest-jodel.py configs/Aarhus-config.sh "$num_of_recent_posts_to_harvest" "$seconds_between_each_harvest"
 # in that way making harvest-jodel.sh simpler.
 
+print lat
+print lng
+print '-----'
 account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city,
         access_token=access_token, expiration_date=expiration_date,
         refresh_token=refresh_token, distinct_id=distinct_id,
