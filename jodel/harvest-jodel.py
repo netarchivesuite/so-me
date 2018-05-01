@@ -178,6 +178,24 @@ account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city,
         refresh_token=refresh_token, distinct_id=distinct_id,
         device_uid=device_uid, is_legacy=True)
 
+# TODO Finish the following (refresh-stuff)
+#unix_time_now = int(calendar.timegm(time.gmtime()))
+#if expiration_date <= unix_time_now:
+#    # Current Unix epoch time is after expiration date, so refresh
+#    refresh_result = account.refresh_access_token()
+#    access_token = refresh_result[1]['access_token']
+#    expiration_date = refresh_result[1]['expiration_date']
+#    # Generate and print bash-sourcable variable-definitions to file
+#    with open("accounts/" + city + "-account-data.sh", "w") as f:
+#        print >>f, "latitude='" + str(lat) + "'"
+#        print >>f, "longitude='" + str(lng) + "'"
+#        print >>f, "city='" + city + "'"
+#        print >>f, "access_token='" + account_data["access_token"] + "'"
+#        print >>f, "expiration_date='" + str(account_data["expiration_date"]) + "'"
+#        print >>f, "refresh_token='" + account_data["refresh_token"] + "'"
+#        print >>f, "distinct_id='" + account_data["distinct_id"] + "'"
+#        print >>f, "device_uid='" + account_data["device_uid"] + "'"
+
 # Dictionary with post_id as key and timestamp as value.
 # Alive posts are posts that had not been deleted(via downvotes/deletion) or
 # been pushed out through the bottom of our "main-feed-harvest-window" when we
