@@ -139,6 +139,7 @@ EOF
     cat "$TFILE"
     echo "${CR}"
     echo "${CR}"
+    rm "$TFILE"
 }
 
 # Input tweets.json dest.warc
