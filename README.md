@@ -39,7 +39,6 @@ pushd webarchive-discovery/
 git checkout solrconfig
 cp -r warc-indexer/src/main/solr/solr7/ ../so-me_solr7_config
 git checkout some
-git merge origin/WARCTargetURI -m "Custom build"
 sed -e 's%"normalise" *: *[a-z]\+,%"normalise" : true,%' -e 's%"resources" *: *[a-z]\+,%"resources" : true,%' -e 's%"detectFaces" *: *[a-z]\+,%"detectFaces" : false%' -e 's%"dominantColours" *: *[a-z]\+,%"dominantColours" : false%' -e 's%"extractApachePreflightErrors" *: *[a-z]\+,%"extractApachePreflightErrors" : false%' -i warc-indexer/src/main/resources/reference.conf 
 mvn package -DskipTests
 popd
