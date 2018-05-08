@@ -52,20 +52,21 @@ ll  webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.
 SolrCloud
 ```
 git clone https://github.com/tokee/solrscripts.git
-solrscripts/cloud_install.sh 7.2.1
-solrscripts/cloud_start.sh 7.2.1
-solrscripts/cloud_sync.sh 7.2.1 so-me_solr7_config/discovery/conf/ so-me.conf some
+solrscripts/cloud_install.sh 7.3.0
+solrscripts/cloud_start.sh 7.3.0
+solrscripts/cloud_sync.sh 7.3.0 so-me_solr7_config/discovery/conf/ so-me.conf some
 ```
-There should now be a Solr running with an empty `some`-collection. Verify by visiting [http://localhost:9000/solr/#/some/collection-overview](http://localhost:9000/solr/#/some/collection-overview).
+There should now be a Solr running with an empty `some`-collection. Verify by visiting [http://localhost:9000/solr/#/some/collection-overview](http://localhost:9000/solr/#/some/collection-overview) or running `solrscripts/cloud_status.sh`.
 
 
 Tomcat (for running SolrWayback)
 ```
 mkdir tomcat
-curl 'http://mirrors.dotsrc.org/apache/tomcat/tomcat-8/v8.5.29/bin/apache-tomcat-8.5.29.tar.gz' | tar -xzo --strip-components=1 -C tomcat
+curl 'http://mirrors.dotsrc.org/apache/tomcat/tomcat-8/v8.5.31/bin/apache-tomcat-8.5.31.tar.gz' | tar -xzo --strip-components=1 -C tomcat
+sed 's/8080/9090/' -i tomcat/conf/server.xml
 tomcat/bin/startup.sh
 ```
-There should now be a tomcat running. Verify by visiting [http://localhost:8080/](http://localhost:8080/).
+There should now be a tomcat running. Verify by visiting [http://localhost:9090/](http://localhost:9090/).
 
 
 SolrWayback
@@ -76,14 +77,14 @@ mvn package -DskipTests
 popd
 
 cp solrwayback/src/test/resources/properties/solrwayback.properties ~/
-sed -e 's%proxy.port=.*%proxy.port=9010%' -e 's%solr.server=.*%solr.server=http://localhost:9000/solr/some/%' -e 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:8080/solrwayback/%' -i ~/solrwayback.properties 
+sed -e 's%proxy.port=.*%proxy.port=9010%' -e 's%solr.server=.*%solr.server=http://localhost:9000/solr/some/%' -e 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:9090/solrwayback/%' -i ~/solrwayback.properties 
 
 cp solrwayback/target/test-classes/properties/solrwaybackweb.properties ~/
-sed 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:8080/solrwayback/%' -i ~/solrwaybackweb.properties 
+sed 's%wayback.baseurl=.*%wayback.baseurl=http://localhost:9090/solrwayback/%' -i ~/solrwaybackweb.properties 
 
-cp solrwayback/target/solrwayback-3.1-SNAPSHOT.war tomcat/webapps/solrwayback.war
+cp solrwayback/target/solrwayback-3.1.war tomcat/webapps/solrwayback.war
 ```
-SolrWayback should now be running in Tomcat. Verify by visiting [http://localhost:8080/solrwayback/](http://localhost:8080/solrwayback/) and issuing a search for `*:*` which should give 0 results and no errors.
+SolrWayback should now be running in Tomcat. Verify by visiting [http://localhost:9090/solrwayback/](http://localhost:9090/solrwayback/) and issuing a search for `*:*` which should give 0 results and no errors.
 
 
 ### Twitter data
@@ -122,5 +123,5 @@ Index the WARCs harvested from Twitter & Jodel with
 ```
 java -Xmx1g -jar webarchive-discovery/warc-indexer/target/warc-indexer*jar-with-dependencies.jar* -s http://localhost:9000/solr/some equidae*.warc* jodel/harvests/*.warc*
 ```
-Solr should now contain tweets, jodels, images and linked resources. Verify by issuing a search in [http://localhost:8080/solrwayback/](http://localhost:8080/solrwayback/).
+Solr should now contain tweets, jodels, images and linked resources. Verify by issuing a search in [http://localhost:9090/solrwayback/](http://localhost:9090/solrwayback/).
 
