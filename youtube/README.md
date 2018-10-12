@@ -31,6 +31,30 @@ The central component is [youtube-dl](https://github.com/rg3/youtube-dl), an Ope
 
 Sample: `youtube-dl --write-info-json -f bestvideo+bestaudio --all-subs --embed-subs --add-metadata --recode-video mkv 'https://www.youtube.com/watch?v=SB6kRExUl-k'`
 
+## Comment track
+
+It seems that youtube-dl *does not* support downloading of comments: [issue #16128](https://github.com/rg3/youtube-dl/issues/16128). Another tool is needed for that.
+
+```
+git clone https://github.com/egbertbouman/youtube-comment-downloader
+pip install requests
+pip install lxml
+pip install cssselect
+chmod 755 youtube-comment-downloader/downloader.py
+
+youtube-comment-downloader/downloader.py --youtubeid SB6kRExUl-k --output SB6kRExUl-k.comments_$(date +%Y%m%d-%H%M).json
+```
+
 ## Harvest
 
+Tying it all together: Using a list of YouTube video-IDs as input, for each video-ID
+
+* Use `wget` for fetching the wbpage + images + css and append it to a WARC (or create a new WARC if it is the first entry in the video-ID-list)
+* Use `youtube-dl` to download video + subtitles + meta-data
+* Use `youtube-comment-downloader` to fetch the comments
+* Pack the video and all the meta-data into the WARC, immediately after the wget-output and alol marked with WARC-headers tuing them together
+
+Unresolved: Which WARC-header is to be used to tie it all together?
+
 `UNDER CONSTRUCTION`
+
