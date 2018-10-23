@@ -123,9 +123,9 @@ EOF
     # "created_at": "Fri Mar 02 10:26:13 +0000 2018",
     local TIMESTAMP="$(TZ=UTZ date +%Y-%m-%dT%H:%M:%S)Z"
     # WARC-IP-Address: 46.30.212.172
-
+    
     # Generate WARC-record headers
-    cat >> "$WARC" <<EOF
+    cat >> "${WARC}.warc" <<EOF
 WARC/1.0${CR}
 WARC-Type: response${CR}
 WARC-Target-URI: ${URL}${CR}
@@ -136,9 +136,9 @@ Content-Type: application/http; msgtype=response${CR}
 Content-Length: $(wc -c < ${TFILE})${CR}
 ${CR}
 EOF
-    cat "$TFILE" >> "$WARC"
-    echo "${CR}" >> "$WARC"
-    echo "${CR}" >> "$WARC"
+    cat "$TFILE" >> "${WARC}.warc"
+    echo "${CR}" >> "${WARC}.warc"
+    echo "${CR}" >> "${WARC}.warc"
     rm "$TFILE"
 }
 
@@ -178,9 +178,9 @@ add_video_and_metadata() {
     for SUB in ${VID}.*.vtt; do
         # TODO: Consider if this should be referenced to the page and not the video
         # Remember that subtitles are also embedded in the video
-        add_file "$SUB" "$URL/SUB" "text/vtt" "$VIDEO_ID"
+        add_file "$SUB" "$URL/$SUB" "text/vtt" "$VIDEO_ID"
         if [[ -s "$SUB" ]]; then
-            echo -n " $URL/SUB" >> "$MAP"
+            echo -n " $URL/$SUB" >> "$MAP"
         fi
     done
     echo "" >> "$MAP"
