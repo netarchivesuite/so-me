@@ -46,6 +46,13 @@ Example: Harvest all tweets mentioning 'dkpol' or 'kvotekonge' for the next half
 
 Optionally, `tweet_filter.sh` can call both `tweets2warc.sh` and `harvest_resources` after tweet-collection has finished, thereby producing WARC-files readu for indexing.
 
+### Harvest setup sample
+
+The script `cron_job_sample.sh` demonstrates harvests using Danish politica-related tags and Danish persons that often tweets on politics. It is meant to be called once an hour from `cron` or similar and will produce both raw JSON filed with tweets and valid WARC-files. The resources (embedded images, profile pictures, linked webpages and their embedded resources) are also harvested.
+
+The tags and persons are chosen by bootstrapping with `dkpol`, `dkgreen` and a few other commonly used Danish tags on politics. After a few initial harvests, the top-20 tags and handles were extracted (and manually pruned for noise) and the harvest-setup extended with these. This was repeated 2-3 times. The tags and handles selection should not be seen as authoritative in any way.
+
+
 ## Solr-index
 
 We use [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) for indexing. This is expected to be extended to handle the JSON-output from Twitter's API.
