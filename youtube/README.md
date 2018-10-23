@@ -12,6 +12,11 @@ Harvest a Youtube resource, consisting of the following parts
 
 Pack it all in WARCs and provide output linking the resources together.
 
+## Requirements
+
+ * Some sort of Linux variant. OS X might work too and prossibly Windows 10 with the Ubuntu sub-system? Only tested on Ubuntu 18.04.
+ * bash, uuidgen, sha1sum, xxd, base32, wget, youtube-dl, youtube-comment-downloader (See "Comment track" below for instructions)
+
 ## Bonus
 
 * Embedding of meta-data, comments & sub-titles in the video itself
@@ -31,9 +36,11 @@ The central component is [youtube-dl](https://github.com/rg3/youtube-dl), an Ope
 
 Sample: `youtube-dl --write-info-json -f bestvideo+bestaudio --all-subs --embed-subs --add-metadata --recode-video mkv 'https://www.youtube.com/watch?v=SB6kRExUl-k'`
 
+Short sample with subtitles & comments: https://www.youtube.com/watch?v=0i8evu26bY4
+
 ## Comment track
 
-It seems that youtube-dl *does not* support downloading of comments: [issue #16128](https://github.com/rg3/youtube-dl/issues/16128). Another tool is needed for that.
+It seems that youtube-dl *does not* support downloading of comments: [issue #16128](https://github.com/rg3/youtube-dl/issues/16128). Another tool is needed for that. Perform the actions below in the `youtube`-folder where this `README.md` is located.
 
 ```
 git clone https://github.com/egbertbouman/youtube-comment-downloader
@@ -41,7 +48,9 @@ pip install requests
 pip install lxml
 pip install cssselect
 chmod 755 youtube-comment-downloader/downloader.py
-
+```
+Test with
+```
 youtube-comment-downloader/downloader.py --youtubeid SB6kRExUl-k --output SB6kRExUl-k.comments_$(date +%Y%m%d-%H%M).json
 ```
 
@@ -52,9 +61,14 @@ Tying it all together: Using a list of YouTube video-IDs as input, for each vide
 * Use `wget` for fetching the wbpage + images + css and append it to a WARC (or create a new WARC if it is the first entry in the video-ID-list)
 * Use `youtube-dl` to download video + subtitles + meta-data
 * Use `youtube-comment-downloader` to fetch the comments
-* Pack the video and all the meta-data into the WARC, immediately after the wget-output and alol marked with WARC-headers tuing them together
+* Pack the video and all the meta-data into the WARC, immediately after the wget-output and also marked with WARC-headers tying them together
 
-Unresolved: Which WARC-header is to be used to tie it all together?
+The script `youtube_harvest.sh` takes a list of YouTube-URLs, either from a file or directly, and performs the actions above. Sample usage:
+```
+./youtube_harvest.sh -f sample_urls.dat
+```
+This produces the file `youtube_YYYYmmdd-HHMM.warc` with the data as well as the file `youtube_YYYYmmdd-HHMM.map.csv` connecting the YouTube-URL, video-URL, metadata-URL, comments-URL and subtitle-URLs in the WARC.
 
-`UNDER CONSTRUCTION`
+## Contact
 
+This Proof Of Concept were hacked together by Toke Eskildsen, toes@kb.dk.
