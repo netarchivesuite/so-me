@@ -115,7 +115,7 @@ add_file() {
 HTTP/1.1 200 OK${CR}
 Content-Type: ${CONTYPE}${CR}
 Content-Length: $(wc -c < "$FILE")${CR}
-X-WARC-signal: youtube_resource${CR}${RELATED}
+X-WARC-signal: youtube_resource${CR}
 ${CR}
 EOF
     cat "$FILE" >> "$TFILE"
@@ -131,7 +131,7 @@ WARC-Type: response${CR}
 WARC-Target-URI: ${URL}${CR}
 WARC-Date: ${TIMESTAMP}${CR}
 WARC-Payload-Digest: $(sha1_32_string "$TFILE")${CR}
-WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}${RELATED}
 Content-Type: application/http; msgtype=response${CR}
 Content-Length: $(wc -c < ${TFILE})${CR}
 ${CR}
