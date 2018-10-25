@@ -98,7 +98,7 @@ add_file() {
     local CONTYPE="$3"
     local RELATED="$4"
     if [[ "." != ".$RELATED" ]]; then
-        RELATED="$RELATED$CR"
+        RELATED="Related-Record-ID: $RELATED$CR"$'\n'
     fi
     
     if [[ ! -s "$FILE" ]]; then
