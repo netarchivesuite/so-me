@@ -54,7 +54,7 @@ count_all() {
         else
             >&2 echo "Error: Unable to count tweets in $F"
         fi
-        if [[ -s ${F%.json}.resources.warc || -s ${F%.json.gz}.resources.warc ]]; then
+        if [[ -s ${F%.json}.resources.warc || -s ${F%.json.gz}.resources.warc || -s ${F%.json}.resources.warc.gz || -s ${F%.json.gz}.resources.warc.gz ]]; then
             RESOURCE_FILES=$(( RESOURCE_FILES+1 ))
         fi
     done
