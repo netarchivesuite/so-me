@@ -36,12 +36,12 @@ After processing, it compresses the output and optionally harvests references re
 Note: The non-pay version of Twitter search only returns a subset of the
 full search result and is only usable for sampling.
 
-Usage: ./tweet_filter.sh [tags [output]]
+Usage: ./tweet_search.sh [tags [output]]
 
 tags:   Comma-separated list of tags, words or phrases.
 output: Output prefix. _YYYYMMDD-HHMM.json.gz will be appended.
 
-Sample: ./tweet_filter.sh ok18,dkpol twitter_da-politics
+Sample: ./tweet_search.sh ok18,dkpol twitter_da-politics
 EOF
     exit $1
 }
