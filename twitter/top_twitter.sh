@@ -101,10 +101,10 @@ calculate_top_x() {
             zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.hashtags[].text else .entities.hashtags[].text end' | tr '[[:upper:]]' '[[:lower:]]' | sort | uniq -c | sort -rn > "$T"
             ;;
         links)
-            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.urls[].expanded_url else entities.urls[].expanded_url end' | sort | uniq -c | sort -rn > "$T"
+            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.urls[].expanded_url else .entities.urls[].expanded_url end' | sort | uniq -c | sort -rn > "$T"
             ;;
         mentions)
-            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.user_mentions[].screen_name else entities.user_mentions[].screen_name end' | sort | uniq -c | sort -rn > "$T"
+            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.user_mentions[].screen_name else .entities.user_mentions[].screen_name end' | sort | uniq -c | sort -rn > "$T"
             ;;
         authors_by_tweets)
             zcat -f "$@" | jq -r '.user.screen_name' | sort | uniq -c | sort -rn > "$T"
