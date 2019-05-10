@@ -21,7 +21,7 @@ fi
 : ${TAGS:="$1"}
 : ${OUTBASE:="twitter_filter"}
 : ${OUTDESIGNATION:="$2"}
-: ${RUNTIME:="3600"} # Seconds
+: ${RUNTIME:="3780"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
