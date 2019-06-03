@@ -92,6 +92,8 @@ harvest() {
     mkdir -p "$WT"
     echo " - Resolving resources for $TFILE" | tee -a "$LOG"
     echo "   - Extracting links to $LINKS" | tee -a "$LOG"
+    # TODO: .extended_tweet.extended_entities.media[].video_info.variants[].url
+    # TODO: .extended_tweet.entities.media[].video_info.variants[].url
     zcat -f "$TFILE" | jq -r '..|.expanded_url?, .media_url?, .media_url_https?, .profile_image_url_https?, .profile_background_image_url_https?, .profile_banner_url?' | grep -v 'null' | grep -v '^$' | grep -v '.*twitter.com/.*/status/.*' | sort | uniq > "$LINKS"
     expand_large_profile_images "$LINKS"
     prioritize "$LINKS"
