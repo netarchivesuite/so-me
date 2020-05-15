@@ -25,6 +25,8 @@ fi
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
+: ${TWARC_OPTIONS:=""} # Optional extra options
+
 source tweet_common.sh
 popd > /dev/null
 
@@ -58,7 +60,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Filtering tweets for $RUNTIME seconds to $OUT"
-    timeout $RUNTIME $TWARC filter "$TAGS" > $OUT
+    timeout $RUNTIME $TWARC $TWARC_OPTIONS filter "$TAGS" > $OUT
 }
 
 ###############################################################################

@@ -25,6 +25,8 @@ fi
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
+: ${TWARC_OPTIONS:=""} # Optional extra options
+
 source tweet_common.sh
 popd > /dev/null
 
@@ -60,7 +62,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    $TWARC search "$TAGS" > $OUT
+    $TWARC $TWARC_OPTIONS search "$TAGS" > $OUT
 }
 
 ###############################################################################
