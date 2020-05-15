@@ -66,7 +66,7 @@ export_timelines() {
     echo "Exporting timelines for the given handles and piping to $OUT"
     while read -r HANDLE; do
         echo " - Getting timeline for $HANDLE"
-        $TWARC $TWARC_OPTIONS timeline "$HANDLE" > $OUT
+        $TWARC $TWARC_OPTIONS timeline "$HANDLE" >> $OUT
         #echo "$TWARC $TWARC_OPTIONS timeline \"$HANDLE\" > $OUT"
     done <<< "$(tr ',' '\n' <<< "$HANDLES")"
 }
