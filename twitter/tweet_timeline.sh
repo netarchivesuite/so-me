@@ -77,4 +77,4 @@ export_timelines() {
 
 check_parameters "$@"
 export_timelines
-#post_process_harvested_tweets "$OUT"
+post_process_harvested_tweets "$OUT"
