@@ -24,6 +24,39 @@ Example: Extracts the top-10 most active tweeters for a harvest with `TOPX=10 TO
 
 The script `tweets2warc.sh` takes tweet-JSON and represents it as a WARC file.
 
+There are no established way of representing tweets that has been harvested through Twitter's API coupled to their web representation, so the choices below are local to the Royal Danish Library. The tweets are represented as separate WARC-entries. The choice was made to ensure direct coupling to Twitter's web representation with the field `WARC-Target-URI` and secondarily to fit well with WARC-indexers that typically handles multi-content records poorly.
+
+
+The WARC-entry header are specified as
+
+```
+WARC/1.0
+WARC-Type: response
+WARC-Target-URI: ${URL}
+WARC-Date: ${TIMESTAMP}
+WARC-Payload-Digest: $(sha1_32_string "$TWEET")
+WARC-Record-ID: <urn:uuid:$(uuidgen)>
+Content-Type: application/http; msgtype=response; format=twitter_tweet
+Content-Length: ${TWEET_RESPONSE_SIZE}
+```
+
+ * `URL` points to Twitter's webpage for the tweet: `https://twitter.com/$TWITTER_HANDLE/status/$TWEET_ID`
+ * `TIMESTAMP` is the `.created_at`-timestamp from the tweet
+ * The `format` in `Content-Type: application/http; msgtype=response; format=twitter_tweet` is a local convention, to help indexers and other tools to recognize the tweets
+
+
+The HTTP-headers are specified as
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; format=twitter_tweet
+Content-Length: $(bytes "$TWEET")
+X-WARC-signal: twitter_tweet
+```
+
+ * `format`is the same local convention as used in the WARC-headers
+ * `X-WARC-signal: twitter_tweet` signals that this is a tweet. This is also a local convention
+ 
 
 ## Linked resources
 
@@ -65,3 +98,19 @@ We use [webarchive-discovery](https://github.com/ukwa/webarchive-discovery) for 
 ## Misc. notes
 
 There is no reply-count in the free Twitter API. There seems to be in the premium API: https://twittercommunity.com/t/reply-count/78367/11
+
+The website https://twitterpolitikere.dk/ seems like a nice place for inspiration for Twitter harvests. See for example their list of top-1000 Danish politiacians by followers:
+
+```
+curl -s 'https://filip.journet.sdu.dk/twitter/politikere/' | grep '<h3>#[0-9]* @<' | sed 's/.*twitter.com\/\([^"]*\)".*/\1/'
+```
+
+Experiment with GEO-search (centered on Odder):
+```
+twarc search --geocode 55.878227,10.185354,100mi > geodk.json
+```
+
+Experiment with GEO-filter (Denmark bounding box):
+```
+twarc filter --location "8.08997684086,54.8000145534,12.6900061378,57.730016588" > dkgeo_filter_20200616-1547.json
+```
