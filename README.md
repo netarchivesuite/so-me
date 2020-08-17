@@ -27,6 +27,12 @@ Tools
 ```
 sudo apt-get install twarc jq wget
 ```
+alternatively twarc can be installes with
+```
+pip3 install twarc
+```
+
+
 Visit [twarc](https://github.com/DocNow/twarc) and follow the instructions for acquiring and configuring Twitter API keys for twarc. It takes a few minuts and requires a Twitter account. Without this, no Twitter harvest.
 
 Ensure that Java 1.8 is installed.
