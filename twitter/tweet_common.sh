@@ -14,6 +14,12 @@ if [[ -s "twitter.conf" ]]; then
 fi
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${HARVEST:="true"} # Harvest linked resources
+: ${OUT_FOLDER:="."} # . = current
+
+if [[ ! -d "$OUT_FOLDER" ]]; then
+   mkdir -p "$OUT_FOLDER"
+fi    
+
 
 ################################################################################
 # FUNCTIONS
@@ -55,7 +61,7 @@ harvest_tweet_resources() {
     fi
 }
 
-# If WARCIFY==true, the resources from the given JSON with tweets are harvested
+# If WARCIFY==true, the tweets harvested in JSON format are packed in WARC format
 warcify_tweets() {
     local TWEETS="$1"
     if [[ "$WARCIFY" == "true" ]]; then
