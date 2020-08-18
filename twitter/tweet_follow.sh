@@ -75,7 +75,7 @@ check_parameters() {
 
 resolve_chunked() {
     local HANDLES="$1"
-    $TWARC users --log ${OUT_PROFILES_TWARC_LOG} "$HANDLES"
+    $TWARC --log ${OUT_PROFILES_TWARC_LOG} users "$HANDLES"
 }
 
 
