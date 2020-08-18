@@ -51,7 +51,9 @@ check_parameters() {
         >&2 echo "No tags specified"$'\n'
         usage 2
     fi
-    : ${OUT:="${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M).json"}
+    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M)"
+    : ${OUT:="${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
 }
 
 ################################################################################
@@ -60,7 +62,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Filtering tweets for $RUNTIME seconds to $OUT"
-    timeout $RUNTIME $TWARC $TWARC_OPTIONS filter "$TAGS" > $OUT
+    timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" filter "$TAGS" > $OUT
 }
 
 ###############################################################################

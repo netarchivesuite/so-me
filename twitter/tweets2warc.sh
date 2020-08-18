@@ -24,7 +24,7 @@ fi
 
 # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinof
 : ${WARC_OPERATOR:="The Royal Danish Library"}
-: ${WARC_SOFTWARE:="Homebrew experimental"}
+: ${WARC_SOFTWARE:="tweets2warc.sh"}
 : ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
 : ${FORCE:="false"}  # If false, any existing WARC-representation is not overwritten
 popd > /dev/null
@@ -102,7 +102,7 @@ EOF
 print_tweet_warc_entry() {
     local TWEET="$1"
 
-    # Generate payload. Not the single CR dividing header & record and the two CRs postfixinf the content
+    # Generate payload. Note the single CR dividing header & record and the two CRs postfixinf the content
     # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
     local TFILE=$(mktemp)
 cat > "$TFILE" <<EOF    

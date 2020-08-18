@@ -53,7 +53,9 @@ check_parameters() {
         >&2 echo "No tags specified"$'\n'
         usage 2
     fi
-    : ${OUT:="${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M).json"}
+    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M)"
+    : ${OUT:="${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
 }
 
 ################################################################################
@@ -62,7 +64,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    $TWARC $TWARC_OPTIONS search "$TAGS" > $OUT
+    $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
 }
 
 ###############################################################################

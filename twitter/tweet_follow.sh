@@ -58,10 +58,15 @@ check_parameters() {
     fi
     HANDLES=$(sed 's/ *, */,/g' <<< "$HANDLES")
 
-    : ${OUT_PRE:="${OUTBASE}_${OUTDESIGNATION}"}
-    : ${OUT_POST:="$(date +%Y%m%d-%H%M).json"}
-    : ${OUT_PROFILES:="${OUT_PRE}_profiles_${OUT_POST}.gz"}
-    : ${OUT_TWEETS:="${OUT_PRE}_tweets_${OUT_POST}"}
+    : ${OUT_PRE:="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}"}
+    : ${OUT_TIME:="$(date +%Y%m%d-%H%M)"}
+    : ${OUT_JSON:="${OUT_TIME}.json"}
+    : ${OUT_LOG:="${OUT_TIME}.twarc.log"}
+
+    : ${OUT_PROFILES:="${OUT_PRE}_profiles_${OUT_JSON}.gz"}
+    : ${OUT_PROFILES_TWARC_LOG:="${OUT_PRE}_profiles_${OUT_LOG}"}
+    : ${OUT_TWEETS:="${OUT_PRE}_tweets_${OUT_JSON}"}
+    : ${OUT_TWEETS_TWARC_LOG:="${OUT_PRE}_tweets_${OUT_LOG}"}
 }
 
 ################################################################################
@@ -70,7 +75,7 @@ check_parameters() {
 
 resolve_chunked() {
     local HANDLES="$1"
-    $TWARC users "$HANDLES"
+    $TWARC users --log ${OUT_PROFILES_TWARC_LOG} "$HANDLES"
 }
 
 
@@ -163,7 +168,7 @@ resolve_ids() {
 follow_users() {
     local USER_COUNT=$(tr ',' '\n' <<< "$IDS" | wc -l)
     echo " - Filtering tweets from $USER_COUNT users for $RUNTIME seconds to $OUT_TWEETS"
-    timeout $RUNTIME $TWARC filter --follow "$IDS" > $OUT_TWEETS
+    timeout $RUNTIME $TWARC --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_TWEETS
 }
 
 ###############################################################################
