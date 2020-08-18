@@ -84,7 +84,7 @@ harvest() {
     local WARC="$2"
     local WBASE="${WARC%.*}"
     local LINKS="${WBASE%.*}.links"
-    local LOG="${WBASE%.*}.log"
+    local LOG="${WBASE%.*}.wget.log"
     local WSANS="${WARC%.*}"
     local WT="t_wget_warc_tmp_$RANDOM"
     
