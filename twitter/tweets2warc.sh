@@ -142,19 +142,27 @@ EOF
     rm "$TFILE"
 }
 
+maybe_gzip() {
+    if [[ "true" == "$WARC_GZ" ]]; then
+        gzip
+    else
+        cat
+    fi
+}
+
 # Input tweets.json dest.warc
 warc_single() {
     local TWEETS="$1"
     local WARC="$2"
     local T=$(mktemp)
     echo " - Converting $TWEETS to $WARC"
-    
-    print_warc_header > "$WARC"
+
+    print_warc_header | maybe_gzip > "$WARC"
     # https://stackoverflow.com/questions/10929453/read-a-file-line-by-line-assigning-the-value-to-a-variable
     # TODO: Figure out how to bypass the stupid temporary file. How do we iterate lines from zcat output? IFS=$'\n' does not help
     zcat -f "$TWEETS" > "$T"
     while read -r TWEET; do
-        print_tweet_warc_entry "$TWEET" >> "$WARC"
+        print_tweet_warc_entry "$TWEET" | maybe_gzip >> "$WARC"
     done < "$T"
     #    done <<< $(zcat -f "$TWEETS")
     rm "$T"
@@ -172,6 +180,9 @@ warc_all() {
             local WARC="${WARC%.*}"
         fi
         WARC="${WARC}.warc"
+        if [[ "true" == "$WARC_GZ" ]]; then
+            WARC="${WARC}.gz"
+        fi
         if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
             if [[ "true" == "$FORCE" ]]; then
                 echo " - Overwriting existing WARC for $TFILE as FORCE=true"
