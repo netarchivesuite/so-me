@@ -105,10 +105,15 @@ harvest() {
     if [[ "$Q" -lt "$QUOTA_MIN" ]]; then
         Q="$QUOTA_MIN"
     fi
-    echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG" | tee -a "$LOG"
+    echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $(which wget) call" | tee -a "$LOG"
+    echo "wget --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
     wget --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
-    echo "   - Produced ${WARC}.gz ($(du -h "${WARC}.gz" | grep -o "^[0-9.]*."))" | tee -a "$LOG"
+    if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
+        echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"
+    else
+        echo "   - Produced ${WARC}.gz ($(du -h "${WARC}.gz" | grep -o "^[0-9.]*."))" | tee -a "$LOG"
+    fi
 }
 
 harvest_all() {
