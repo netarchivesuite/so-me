@@ -14,12 +14,16 @@ pushd ${BASH_SOURCE%/*} > /dev/null
 if [[ -s "harvest_resources.conf" ]]; then
     source harvest_resources.conf
 fi
+if [[ -s "twitter.conf" ]]; then
+    source twitter.conf
+fi
 : ${QUOTA_MIN:="50"} # Minimum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_MAX:="500"} # Maximum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_PER_TWEET:="10"} # MB
 : ${TIMEOUT:="60"}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
 : ${IMAGES_ONLY:="false"} # If true, only images are harvested)
+: ${WGET:="$(which wget)"}
 popd > /dev/null
 
 usage() {
@@ -36,6 +40,10 @@ check_parameters() {
     if [[ -z "$1" ]]; then
         echo "No harvested tweets specified"
         usage 2
+    fi
+    if [[ -z "$WGET" ]]; then
+        echo "Error: No wget available"
+        usage 3
     fi
 }
 
@@ -105,9 +113,11 @@ harvest() {
     if [[ "$Q" -lt "$QUOTA_MIN" ]]; then
         Q="$QUOTA_MIN"
     fi
-    echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $(which wget) call" | tee -a "$LOG"
-    echo "wget --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
-    wget --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
+    echo "   - wget located at $WGET had version info" | tee -a "$LOG"
+    $WGET --version | tee -a "$LOG"
+    echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
+    echo "$WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
+    $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
     if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
         echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"
