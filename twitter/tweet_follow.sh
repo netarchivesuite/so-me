@@ -139,7 +139,7 @@ handles_to_ids() {
     UNRESOLVED=""
     while read -r HANDLE; do
         # handle id epoch
-        ID=$(grep -i "$HANDLE " twitter_handles.dat | cut -d\  -f2)
+        ID=$(grep -i "$HANDLE " twitter_handles.dat | tail -n 1 | cut -d\  -f2)
         if [[ -z $ID ]]; then
             if [[ "." != ".$UNRESOLVED" ]]; then
                 UNRESOLVED="${UNRESOLVED},"
