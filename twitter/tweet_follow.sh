@@ -31,6 +31,7 @@ fi
 : ${TWARC:="$(which twarc)"}
 : ${LOOKUP_CHUNK_SIZE:="200"}
 : ${CALM_TIME:="7"}
+: ${TWARC_OPTIONS:=""} # Optional extra options
 source tweet_common.sh
 popd > /dev/null
 
@@ -75,7 +76,7 @@ check_parameters() {
 
 resolve_chunked() {
     local HANDLES="$1"
-    $TWARC --log ${OUT_PROFILES_TWARC_LOG} users "$HANDLES"
+    $TWARC $TWARC_OPTIONS --log ${OUT_PROFILES_TWARC_LOG} users "$HANDLES"
 }
 
 
