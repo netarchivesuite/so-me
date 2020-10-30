@@ -31,6 +31,7 @@ fi
 : ${TWARC:="$(which twarc)"}
 : ${LOOKUP_CHUNK_SIZE:="200"}
 : ${CALM_TIME:="7"}
+: ${TWARC_OPTIONS:=""} # Optional extra options
 source tweet_common.sh
 popd > /dev/null
 
@@ -75,7 +76,7 @@ check_parameters() {
 
 resolve_chunked() {
     local HANDLES="$1"
-    $TWARC --log ${OUT_PROFILES_TWARC_LOG} users "$HANDLES"
+    $TWARC $TWARC_OPTIONS --log ${OUT_PROFILES_TWARC_LOG} users "$HANDLES"
 }
 
 
@@ -139,7 +140,7 @@ handles_to_ids() {
     UNRESOLVED=""
     while read -r HANDLE; do
         # handle id epoch
-        ID=$(grep -i "$HANDLE " twitter_handles.dat | cut -d\  -f2)
+        ID=$(grep -i "$HANDLE " twitter_handles.dat | tail -n 1 | cut -d\  -f2)
         if [[ -z $ID ]]; then
             if [[ "." != ".$UNRESOLVED" ]]; then
                 UNRESOLVED="${UNRESOLVED},"
