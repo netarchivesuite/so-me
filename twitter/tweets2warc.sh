@@ -172,7 +172,7 @@ warc_all() {
     for TFILE in "$@"; do
         if [[ ! -s "$TFILE" ]]; then
             echo " - Skipping $TFILE as there is no content"
-            return
+            continue
         fi
         
         local WARC="${TFILE%.*}"
