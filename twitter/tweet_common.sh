@@ -20,10 +20,90 @@ if [[ ! -d "$OUT_FOLDER" ]]; then
    mkdir -p "$OUT_FOLDER"
 fi    
 
+CR=$(printf '\x0d')
+HT=$(printf '\x09')
 
 ################################################################################
 # FUNCTIONS
 ################################################################################
+
+# Creates a temporary file with the given content compressed as gzip
+#
+# Input: Content
+# Output: File with the content gzipped.
+#         The caller is responsible for deleting the file after use.
+make_gzip_file() {
+    local CONTENT="$1"
+    local F=$(mktemp)
+    echo "$CONTENT" | gzip > "$F"
+    echo "$F"
+}
+
+# Input: String
+# Output: Number of bytes (not number of characters)
+bytes() {
+    local TEXT="$1"
+    LANG=C LC_ALL=C echo "${#TEXT}"
+}
+
+# Input file
+sha1_32_file() {
+    local FILE="$1"
+    # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
+    echo -n "sha1:"
+    sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | base32
+}
+
+# Input String
+sha1_32_string() {
+    local CONTENT="$1"
+    # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
+    echo -n "sha1:"
+    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | base32
+}
+
+
+# Creates a metafile with scripts and logs related to a produced WARC.
+#
+# Input: WARC_file_name
+# Output: Content of WARC (gzip compressed)
+create_metafile() {
+    local WFN="$1"
+
+    # Generate payload. Note the single CR dividing header & record and the two CRs postfixing the content
+    # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
+
+    local TFILE=$(mktemp)
+    cat > "$TFILE" <<EOF    
+software: so-me/twitter (https://github.com/netarchivesuite/so-me)${CR}
+description: Tweets and profiles harvested from Twitter API and related material harvested using wget${CR}
+hostname: $(hostname)${CR}
+datetime: $(date +"%Y-%m-%dT%H:%M:%S:%:z")${CR}
+isPartOf: ${WFN}${CR}
+${CR}
+EOF
+
+    cat <<EOF
+WARC/1.0${CR}
+WARC-Type: warcinfo${CR}
+WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+WARC-Block-Digest: $(sha_32_file "$TFILE")${CR}
+Content-Type: application/warc-fields${CR}
+Content-Length: $(wc -c < "$TFILE")${CR}
+${CR}
+EOF
+    cat "$TFILE"
+    rm "$TFILE"
+}
+
+# Input: targetURI filename
+create_resource_entry() {
+    local TARGET_URI="$1"
+    local FILENAME="$2"
+
+    
+}
 
 # Checks that the last line in the given JSON is valid and if not, discards it.
 # Packs the rest with GZIP.
