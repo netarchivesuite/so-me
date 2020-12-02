@@ -62,16 +62,19 @@ count_all() {
     TOTAL_COUNT=0
     FILE_COUNT=0
     RESOURCE_FILES=0
+    TE=$(mktemp)
     local FC=1
     local FT=$(tr ' ' '\n' <<< ${FOLDERS} | wc -l)
     for FOLDER in $FOLDERS; do
         echo " - Folder ${FC}/${FT} $FOLDER"
+        find "$FOLDER" -iname "*.json" -o -iname "*.json.gz" > "$TE"
         while read -r FILE; do 
             count_file "$FILE"
-        done <<< $(find "$FOLDER" -iname "*.json" -o -iname "*.json.gz")
+        done < "$TE"
         FC=$((FC+1))
         echo "   Running total: $FILE_COUNT files ($RESOURCE_FILES with harvested resources) with $TOTAL_COUNT individual tweets"
     done
+    rm "$TE"
 }
 
 ###############################################################################
