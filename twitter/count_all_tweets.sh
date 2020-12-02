@@ -68,7 +68,8 @@ count_all() {
     for FOLDER in $FOLDERS; do
         echo " - Folder ${FC}/${FT} $FOLDER"
         find "$FOLDER" -iname "*.json" -o -iname "*.json.gz" > "$TE"
-        while read -r FILE; do 
+        IFS=$'\n'
+        while read FILE; do 
             count_file "$FILE"
         done < "$TE"
         FC=$((FC+1))
