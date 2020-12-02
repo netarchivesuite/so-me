@@ -5,8 +5,6 @@
 # how many individual tweets there are.
 # Resilient towards corrupted files.
 #
-# Requirements: twarc, jq
-#
 
 ###############################################################################
 # CONFIG
