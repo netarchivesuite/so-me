@@ -142,6 +142,59 @@ EOF
     rm "$TFILE"
 }
 
+print_meta_header() {
+    local T=$(mktemp)
+    cat > "$T" <<EOF
+# ${CR}
+operator: ${WARC_OPERATOR}${CR}
+software: ${WARC_SOFTWARE}${CR}
+EOF
+    cat <<EOF
+WARC/1.0${CR}
+WARC-Type: warcinfo${CR}
+WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+Content-Type: application/warc-fields${CR}
+Content-Length: $(wc -c < "$T")${CR}
+TODO: Link this to the WARCs with twitter-json and resources
+${CR}
+EOF
+    cat "$T"
+    rm "$T"
+    echo "${CR}"
+    echo "${CR}"
+}
+
+# Input: <UUID for the warcinfo> <filename> <target URI> [content type (mime, default is text/plain)]
+print_file_resource() {
+    local WARCINFO_UUID="$1"
+    local RESOURCE="$2"
+    local TARGET_URI="$3"
+    local CONTENT_TYPE="$3"
+    if [[ -z "$CONTENT_TYPE" ]]; then
+        CONTENT_TYPE="text/plain"
+    fi
+
+    local TIMESTAMP="$(TZ=UTZ date --date="$(stat --format %y "$RESOURCE")" +"%Y-%m-%dT%H:%M:%S"Z)"
+
+    cat <<EOF
+WARC/1.0${CR}
+WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
+WARC-Date: ${TIMESTAMP}${CR}
+WARC-Type: resource${CR}
+WARC-Target-URI: ${TARGET_URI}${CR}
+WARC-Payload-Digest: $(sha1_32_string "$RESOURCE")${CR}
+WARC-Warcinfo-ID: ${WARCINFO_UUID}${CR}
+Content-Type: ${CONTENT_TYPE}${CR}
+Content-Length: $(wc -c < ${RESOURCE})${CR}
+${CR}
+EOF
+    cat "$RESOURCE"
+    echo "${CR}"
+    echo "${CR}"
+}
+
+
 maybe_gzip() {
     if [[ "true" == "$WARC_GZ" ]]; then
         gzip
@@ -151,7 +204,7 @@ maybe_gzip() {
 }
 
 # Input tweets.json dest.warc
-warc_single() {
+json_to_warc() {
     local TWEETS="$1"
     local WARC="$2"
     local T=$(mktemp)
@@ -168,31 +221,120 @@ warc_single() {
     rm "$T"
 }
 
+ensure_meta_header() {
+    local META="$1"
+    if [[ -s "$META" ]]; then
+        return
+    fi
+    print_meta_header | maybe_gzip > "$META"
+}
+
+# Input a WARC file
+# Output: The UUID for the file
+get_warcinfo_uuid() {
+    local WARC="$1"
+    # WARC-Record-ID: <urn:uuid:e1233143-cbb3-4454-a073-2c5fdbeb0f1b>
+    zcat "$WARC" | head -c 1000 | grep -a -m 1 "WARC-Record-ID" | cut -d\  -f2
+}
+
+create_meta() {
+    local META="$1"
+    local BASE="$2"
+    local JSON_WARC="$3"
+
+    rm -rf "$META"
+    echo " - Generating meta WARC $META"
+    
+    # Add metadata for the tweet WARC
+    local JSON_WARC_UUID=$(get_warcinfo_uuid "$JSON_WARC")
+    if [[ -z "$JSON_WARC_UUID" ]]; then
+        >&2 echo "ERROR: Unable to extract warcinfo UUID for ${JSON_WARC_UUID}. Meta data for main warc will be skipped"
+    else
+        local TWARC_LOG="${BASE}.twarc.log"
+        if [[ -s "$TWARC_LOG" ]]; then
+            echo "   - Adding twarc log to meta: $TWARC_LOG"
+            ensure_meta_header "$META"
+            # Input: <UUID for the warcinfo> <filename> [content type (mime, default is text/plain)]
+            print_file_resource "$JSON_WARC_UUID" "$TWARC_LOG" "metadata://netarkivet.dk/twitter-api/" "text/plain ; twarc log" | maybe_gzip >> "$META"
+        else
+            echo "   - Unable to locate twarc log $TWARC_LOG"
+        fi
+    fi
+
+    # Add metadata for the resources WARC
+    local RESOURCES="${BASE}.resources.warc.gz"
+    if [[ ! -s "$RESOURCES" ]]; then
+        local RESOURCES="${BASE}.resources.warc" # Legacy handling
+    fi        
+    if [[ -s "$RESOURCES" ]]; then
+        local RESOURCES_WARC_UUID=$(get_warcinfo_uuid "$RESOURCES")
+        if [[ -z "$RESOURCES_WARC_UUID" ]]; then
+            >&2 echo "ERROR: Unable to extract warcinfo UUID for ${RESOURCES}. Meta data for resources will be skipped"
+            continue
+        fi
+
+        local LINKS="${BASE}.links"
+        if [[ -s "$LINKS" ]]; then
+            echo "   - Adding tweet links: $LINKS"
+            ensure_meta_header "$META"
+            print_file_resource "$RESOURCES_WARC_UUID" "$LINKS" "metadata://netarkivet.dk/twitter-api/" "text/plain ; tweet links" | maybe_gzip >> "$META"
+        else
+            echo "   - Unable to locate tweet links: $LINKS"
+        fi
+
+        local WGET_LOG="${BASE}.wget.log"
+        if [[ -s "$WGET_LOG" ]]; then
+            echo "   - Adding wget log: $WGET_LOG"
+            ensure_meta_header "$META"
+            print_file_resource "$RESOURCES_WARC_UUID" "$WGET_LOG" "metadata://netarkivet.dk/twitter-api/" "text/plain ; wget log" | maybe_gzip >> "$META"
+        else
+            echo "   - unable to locate wget log: $WGET_LOG"
+        fi
+    else
+        echo "    - Unable to locate resources $RESOURCES"
+    fi
+}
+
+warc_single()  {
+    TFILE="$1"
+    echo "Processing $TFILE"
+
+    local BASE="${TFILE%.*}"
+    if [[ "${BASE: -5}" == ".json" ]]; then
+        local BASE="${BASE%.*}"
+    fi
+    WARC="${BASE}.warc"
+    if [[ "true" == "$WARC_GZ" ]]; then
+        WARC="${WARC}.gz"
+    fi
+    if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
+        if [[ "true" == "$FORCE" ]]; then
+            echo " - Overwriting existing WARC for $TFILE as FORCE=true"
+            json_to_warc "$TFILE" "$WARC"
+        else
+            echo " - Skipping $WARC as it has already been converted"
+        fi
+    else
+        json_to_warc "$TFILE" "$WARC"
+    fi
+
+    # Meta contains logs etc.
+    local META="${BASE}.meta.warc.gz"
+    if [[ -s "$META" && "true" != "$FORCE" ]]; then
+        echo " - Skipping meta file $META as it has already been created"
+    else
+        rm -f "$META"
+        create_meta "$META" "$BASE" "$WARC"
+    fi
+}
+
 warc_all() {
     for TFILE in "$@"; do
         if [[ ! -s "$TFILE" ]]; then
             echo " - Skipping $TFILE as there is no content"
             continue
         fi
-        
-        local WARC="${TFILE%.*}"
-        if [[ "${WARC: -5}" == ".json" ]]; then
-            local WARC="${WARC%.*}"
-        fi
-        WARC="${WARC}.warc"
-        if [[ "true" == "$WARC_GZ" ]]; then
-            WARC="${WARC}.gz"
-        fi
-        if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
-            if [[ "true" == "$FORCE" ]]; then
-                echo " - Overwriting existing WARC for $TFILE as FORCE=true"
-                warc_single "$TFILE" "$WARC"
-            else
-                echo " - Skipping $TFILE as it has already been converted"
-            fi
-        else
-            warc_single "$TFILE" "$WARC"
-        fi
+        warc_single "$TFILE"
     done
 }
 
