@@ -20,7 +20,8 @@ fi
 : ${QUOTA_MIN:="50"} # Minimum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_MAX:="500"} # Maximum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_PER_TWEET:="10"} # MB
-: ${TIMEOUT:="60"}
+: ${TIMEOUT:="60"} # Connection/idle timeout in seconds
+: ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
 : ${IMAGES_ONLY:="false"} # If true, only images are harvested)
 : ${WGET:="$(which wget)"}
@@ -116,8 +117,8 @@ harvest() {
     echo "   - wget located at $WGET had version info" | tee -a "$LOG"
     $WGET --version | tee -a "$LOG"
     echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
-    echo "$WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
-    $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
+    echo "timeout $TOTAL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
+    timeout $TOTAL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
     if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
         echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"
