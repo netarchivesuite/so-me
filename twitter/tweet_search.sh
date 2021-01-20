@@ -21,6 +21,7 @@ if [[ -s "twitter.conf" ]]; then
 fi
 : ${TAGS:="$1"}
 : ${OUTBASE:="twitter_search"}
+: ${OUT_FOLDER:="."}
 : ${OUTDESIGNATION:="$2"}
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets

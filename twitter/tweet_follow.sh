@@ -24,6 +24,7 @@ if [[ -s "twitter.conf" ]]; then
 fi
 : ${HANDLES:="$1"}
 : ${OUTBASE:="twitter_users"}
+: ${OUT_FOLDER:="."}
 : ${OUTDESIGNATION:="$2"}
 : ${OUTDESIGNATION:="noname"}
 : ${RUNTIME:="3780"} # Seconds
