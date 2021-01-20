@@ -117,10 +117,10 @@ harvest() {
         Q="$QUOTA_MIN"
     fi
     echo "   - wget located at $WGET had version info" >> "$LOG"
-    $WGET --version | tee -a "$LOG"
+    $WGET --version >> "$LOG"
     echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
-    echo "timeout $TOTAL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
-    timeout $TOTAL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
+    echo "timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
+    timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
     if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
         echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"
