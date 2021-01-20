@@ -135,7 +135,7 @@ harvest_tweet_resources() {
     local TWEETS="$1"
     if [[ "$HARVEST" == "true" ]]; then
         echo " - Harvesting resources from $TWEETS"
-        ./harvest_resources.sh "$TWEETS"
+        ( . ./harvest_resources.sh "$TWEETS" )
     else
         echo " - Skipping harvest of ${TWEETS} resources"
     fi
@@ -146,7 +146,7 @@ warcify_tweets() {
     local TWEETS="$1"
     local DATETIME="$2"
     if [[ "$WARCIFY" == "true" ]]; then
-        SCRIPTS="$SCRIPTS" DATETIME="$DATETIME" JOB="$JOB" ./tweets2warc.sh "$TWEETS"
+        ( SCRIPTS="$SCRIPTS" DATETIME="$DATETIME" JOB="$JOB" . ./tweets2warc.sh "$TWEETS" )
     else
         echo " - Skipping WARC-representation of tweets from $TWEETS"
     fi
