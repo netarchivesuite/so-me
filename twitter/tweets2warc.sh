@@ -32,6 +32,7 @@ fi
 
 : ${DATETIME=""}; # If not defined, it will be attmpted grepped from the input filename for pattern YYYYMMDD-hhmm
 : ${JOB:=""}    # Major type of job, e.g. "tweet_filter". Must be defined
+: ${INCLUDE_TWEET_STREAM:="false"} # If true, the full twitter JSON stream is included in meta
 popd > /dev/null
 
 usage() {
@@ -259,6 +260,7 @@ create_meta() {
     local META="$1"
     local BASE="$2"
     local JSON_WARC="$3"
+    local JSON_STREAM="$4"
 
     rm -rf "$META"
     echo " - Generating meta WARC $META"
@@ -295,7 +297,6 @@ create_meta() {
         if [[ -s "$LINKS" ]]; then
             echo "   - Adding tweet links: $LINKS to $META"
             ensure_meta_header "$META"
-            ###
             print_file_resource "$RESOURCES_WARC_UUID" "$LINKS" "metadata://netarkivet.dk/twitter-api?tool=harvest_resources.sh&output=links&job=${JOB}&harvestTime=${DATETIME}" "text/plain ; tweet links" | maybe_gzip >> "$META"
         else
             echo "   - Unable to locate tweet links: $LINKS"
@@ -329,6 +330,16 @@ create_meta() {
         ensure_meta_header "$META"
         print_file_resource "$JSON_WARC_UUID" "$SCRIPT" "metadata://netarkivet.dk/twitter-api?tool=tweets2warc&output=${SCRIPT}&job=${JOB}&harvestTime=${DATETIME}" "application/x-shellscript ; harvest script" | maybe_gzip >> "$META"
     done
+
+    # Include original tweet stream if so wanted
+    if [[ "true" == "$INCLUDE_TWEET_STREAM" ]]; then
+        echo "   - Adding Twitter JSON stream '$JSON_STREAM' to $META"
+        local TJ=$(mktemp)
+        zcat "$JSON_STREAM" > "$TJ"
+        ensure_meta_header "$META"
+        print_file_resource "$JSON_WARC_UUID" "$TJ" "metadata://netarkivet.dk/twitter-api?tool=twarc&output=jsonl&job=${JOB}&harvestTime=${DATETIME}" "application/x-ndjson ; Twitter API JSON Stream" | maybe_gzip >> "$META"
+        rm "$TJ"
+    fi
 }
 
 warc_single()  {
@@ -360,7 +371,7 @@ warc_single()  {
         echo " - Skipping meta file $META as it has already been created"
     else
         rm -f "$META"
-        create_meta "$META" "$BASE" "$WARC"
+        create_meta "$META" "$BASE" "$WARC" "$TFILE"
     fi
 }
 
