@@ -161,8 +161,8 @@ post_process_harvested_tweets() {
     local TWEETS="$1"
     local DATETIME="$2"
     local JOB="$3"
-    if [[ -s "$TWEETS" ]]; then
-        >&2 echo "Error: No tweet file specified"
+    if [[ ! -s "$TWEETS" ]]; then
+        >&2 echo "Error (tweet_common.sh): No tweet file specified"
         exit 2
     fi
     if [[ -s "$DATETIME" ]]; then

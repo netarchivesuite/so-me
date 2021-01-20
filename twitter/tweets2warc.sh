@@ -24,13 +24,13 @@ fi
 
 # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinof
 : ${WARC_OPERATOR:="The Royal Danish Library"}
-: ${WARC_SOFTWARE:="tweets2warc.sh"}
+: ${WARC_SOFTWARE:="tweets2warc.sh  https://github.com/netarchivesuite/so-me/"}
 : ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
 : ${FORCE:="false"}  # If false, any existing WARC-representation is not overwritten
 
 : ${SCRIPTS:=""}     # Space separated list of scripts to include in the meta WARC. tweets2warc.sh will be added automatically
 
-: ${DATETIME="$(date +%Y%m%d-%H%M)"}
+: ${DATETIME=""}; # If not defined, it will be attmpted grepped from the input filename for pattern YYYYMMDD-hhmm
 : ${JOB:=""}    # Major type of job, e.g. "tweet_filter". Must be defined
 popd > /dev/null
 
@@ -51,6 +51,15 @@ check_parameters() {
     if [[ -z "$JOB" ]]; then
         echo "No JOB specified"
         usage 3
+    fi
+    if [[ -z "$DATETIME" ]]; then
+        DATETIME=$(grep -o "[1-3][0-9][0-9][0-9][0-1][0-9][0-3][0-9]-[0-2][0-9][0-6][0-9]" <<< $1)
+        if [[ -z "$DATETIME" ]]; then
+            DATETIME=$(date +%Y%m%d-%H%M)
+            echo " - No DATETIME specified, could not locate YYYYmmdd-HHMM in $1 - using system $DATETIME"
+        else
+            echo " - No DATETIME specified, extrached $DATETIME from $1"
+        fi
     fi
     SCRIPTS="tweets2warc.sh $SCRIPTS"
     CR=$(printf '\x0d')
@@ -91,7 +100,7 @@ print_warc_header() {
     cat > "$T" <<EOF
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
-software: ${WARC_SOFTWARE} https://github.com/netarchivesuite/so-me/ ${CR}
+software: ${WARC_SOFTWARE}${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}

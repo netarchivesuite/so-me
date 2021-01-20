@@ -74,4 +74,4 @@ filter_tweets() {
 
 check_parameters "$@"
 filter_tweets
-SCRIPTS="tweet_search.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME"
+SCRIPTS="tweet_search.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME" search

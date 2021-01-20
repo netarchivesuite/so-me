@@ -114,7 +114,7 @@ harvest() {
     if [[ "$Q" -lt "$QUOTA_MIN" ]]; then
         Q="$QUOTA_MIN"
     fi
-    echo "   - wget located at $WGET had version info" | tee -a "$LOG"
+    echo "   - wget located at $WGET had version info" >> "$LOG"
     $WGET --version | tee -a "$LOG"
     echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
     echo "timeout $TOTAL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"

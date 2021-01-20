@@ -21,7 +21,7 @@ fi
 : ${TAGS:="$1"}
 : ${OUTBASE:="twitter_filter"}
 : ${OUTDESIGNATION:="$2"}
-: ${RUNTIME:="3780"} # Seconds
+: ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
@@ -72,4 +72,4 @@ filter_tweets() {
 
 check_parameters "$@"
 filter_tweets
-SCRIPTS="tweet_filter.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME"
+SCRIPTS="tweet_filter.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME" filter

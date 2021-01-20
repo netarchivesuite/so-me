@@ -78,4 +78,4 @@ export_timelines() {
 
 check_parameters "$@"
 export_timelines
-SCRIPTS="tweet_timeline.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME"
+SCRIPTS="tweet_timeline.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME" timeline

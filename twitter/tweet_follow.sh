@@ -180,4 +180,4 @@ check_parameters "$@"
 # resolve_user_profiles
 resolve_ids
 follow_users
-SCRIPTS="tweet_follow.sh $SCRIPTS" post_process_harvested_tweets "$OUT_TWEETS" "$OUT_TIME"
+SCRIPTS="tweet_follow.sh $SCRIPTS" post_process_harvested_tweets "$OUT_TWEETS" "$OUT_TIME" follow
