@@ -53,7 +53,8 @@ check_parameters() {
         >&2 echo "No tags specified"$'\n'
         usage 2
     fi
-    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M)"
+    : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
+    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
     : ${OUT:="${OUT_H}.json"}
     : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
 }
@@ -73,4 +74,4 @@ filter_tweets() {
 
 check_parameters "$@"
 filter_tweets
-post_process_harvested_tweets "$OUT"
+SCRIPTS="tweet_search.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME"

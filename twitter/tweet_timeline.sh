@@ -55,7 +55,8 @@ check_parameters() {
         >&2 echo "No handles specified"$'\n'
         usage 2
     fi
-    : ${OUT:="${OUTBASE}_${OUTDESIGNATION}_$(date +%Y%m%d-%H%M).json"}
+    : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
+    : ${OUT:="${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}.json"}
 }
 
 ################################################################################
@@ -77,4 +78,4 @@ export_timelines() {
 
 check_parameters "$@"
 export_timelines
-post_process_harvested_tweets "$OUT"
+SCRIPTS="tweet_timeline.sh $SCRIPTS" post_process_harvested_tweets "$OUT" "$OUT_TIME"

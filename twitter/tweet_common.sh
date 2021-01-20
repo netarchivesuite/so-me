@@ -144,19 +144,36 @@ harvest_tweet_resources() {
 # If WARCIFY==true, the tweets harvested in JSON format are packed in WARC format
 warcify_tweets() {
     local TWEETS="$1"
+    local DATETIME="$2"
     if [[ "$WARCIFY" == "true" ]]; then
-        ./tweets2warc.sh "$TWEETS"
+        SCRIPTS="$SCRIPTS" DATETIME="$DATETIME" JOB="$JOB" ./tweets2warc.sh "$TWEETS"
     else
         echo " - Skipping WARC-representation of tweets from $TWEETS"
     fi
 }
 
-# Shorthand for calling pack_json, harvest_tweet_resources and warcify_tweets
 #
-# Input: tweets-file
+# Shorthand for calling pack_json, harvest_tweet_resources and warcify_tweets
+# JOB = overall job, e.g. tweet_search. Details are handled by SCRIPTS
+#
+# Input: tweets-file YYYYMMDD-HHMM JOB
 post_process_harvested_tweets() {
     local TWEETS="$1"
+    local DATETIME="$2"
+    local JOB="$3"
+    if [[ -s "$TWEETS" ]]; then
+        >&2 echo "Error: No tweet file specified"
+        exit 2
+    fi
+    if [[ -s "$DATETIME" ]]; then
+        >&2 echo "Error: No datetime specified"
+        exit 3
+    fi
+    if [[ -s "$JOB" ]]; then
+        >&2 echo "Error: No job specified"
+        exit 4
+    fi
     pack_json "$TWEETS"
     harvest_tweet_resources "${TWEETS}.gz"
-    warcify_tweets "${TWEETS}.gz"
+    SCRIPTS="tweet_common.sh $SCRIPTS" warcify_tweets "${TWEETS}.gz" "$DATETIME" "$JOB"
 }

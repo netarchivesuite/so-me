@@ -27,6 +27,11 @@ fi
 : ${WARC_SOFTWARE:="tweets2warc.sh"}
 : ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
 : ${FORCE:="false"}  # If false, any existing WARC-representation is not overwritten
+
+: ${SCRIPTS:=""}     # Space separated list of scripts to include in the meta WARC. tweets2warc.sh will be added automatically
+
+: ${DATETIME="$(date +%Y%m%d-%H%M)"}
+: ${JOB:=""}    # Major type of job, e.g. "tweet_filter". Must be defined
 popd > /dev/null
 
 usage() {
@@ -43,6 +48,11 @@ check_parameters() {
         echo "No Twitter API JSON files specified"
         usage 2
     fi
+    if [[ -z "$JOB" ]]; then
+        echo "No JOB specified"
+        usage 3
+    fi
+    SCRIPTS="tweets2warc.sh $SCRIPTS"
     CR=$(printf '\x0d')
     HT=$(printf '\x09')
 }
@@ -81,7 +91,7 @@ print_warc_header() {
     cat > "$T" <<EOF
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
-software: ${WARC_SOFTWARE}${CR}
+software: ${WARC_SOFTWARE} https://github.com/netarchivesuite/so-me/ ${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
@@ -170,11 +180,10 @@ print_file_resource() {
     local WARCINFO_UUID="$1"
     local RESOURCE="$2"
     local TARGET_URI="$3"
-    local CONTENT_TYPE="$3"
+    local CONTENT_TYPE="$4"
     if [[ -z "$CONTENT_TYPE" ]]; then
         CONTENT_TYPE="text/plain"
     fi
-
     local TIMESTAMP="$(TZ=UTZ date --date="$(stat --format %y "$RESOURCE")" +"%Y-%m-%dT%H:%M:%S"Z)"
 
     cat <<EOF
@@ -245,7 +254,7 @@ create_meta() {
     rm -rf "$META"
     echo " - Generating meta WARC $META"
     
-    # Add metadata for the tweet WARC
+    # Add metadata for the tweet WARC + twarc logs
     local JSON_WARC_UUID=$(get_warcinfo_uuid "$JSON_WARC")
     if [[ -z "$JSON_WARC_UUID" ]]; then
         >&2 echo "ERROR: Unable to extract warcinfo UUID for ${JSON_WARC_UUID}. Meta data for main warc will be skipped"
@@ -255,13 +264,13 @@ create_meta() {
             echo "   - Adding twarc log to meta: $TWARC_LOG"
             ensure_meta_header "$META"
             # Input: <UUID for the warcinfo> <filename> [content type (mime, default is text/plain)]
-            print_file_resource "$JSON_WARC_UUID" "$TWARC_LOG" "metadata://netarkivet.dk/twitter-api/" "text/plain ; twarc log" | maybe_gzip >> "$META"
+            print_file_resource "$JSON_WARC_UUID" "$TWARC_LOG" "metadata://netarkivet.dk/twitter-api?tool=twarc&output=log&job=${JOB}&harvestTime=${DATETIME}" "text/plain ; twarc log" | maybe_gzip >> "$META"
         else
             echo "   - Unable to locate twarc log $TWARC_LOG"
         fi
     fi
 
-    # Add metadata for the resources WARC
+    # Add metadata for the resources WARC + links + wget log + harvest script
     local RESOURCES="${BASE}.resources.warc.gz"
     if [[ ! -s "$RESOURCES" ]]; then
         local RESOURCES="${BASE}.resources.warc" # Legacy handling
@@ -275,24 +284,42 @@ create_meta() {
 
         local LINKS="${BASE}.links"
         if [[ -s "$LINKS" ]]; then
-            echo "   - Adding tweet links: $LINKS"
+            echo "   - Adding tweet links: $LINKS to $META"
             ensure_meta_header "$META"
-            print_file_resource "$RESOURCES_WARC_UUID" "$LINKS" "metadata://netarkivet.dk/twitter-api/" "text/plain ; tweet links" | maybe_gzip >> "$META"
+            ###
+            print_file_resource "$RESOURCES_WARC_UUID" "$LINKS" "metadata://netarkivet.dk/twitter-api?tool=harvest_resources.sh&output=links&job=${JOB}&harvestTime=${DATETIME}" "text/plain ; tweet links" | maybe_gzip >> "$META"
         else
             echo "   - Unable to locate tweet links: $LINKS"
         fi
 
         local WGET_LOG="${BASE}.wget.log"
         if [[ -s "$WGET_LOG" ]]; then
-            echo "   - Adding wget log: $WGET_LOG"
+            echo "   - Adding wget log: $WGET_LOG to $META"
             ensure_meta_header "$META"
-            print_file_resource "$RESOURCES_WARC_UUID" "$WGET_LOG" "metadata://netarkivet.dk/twitter-api/" "text/plain ; wget log" | maybe_gzip >> "$META"
+            print_file_resource "$RESOURCES_WARC_UUID" "$WGET_LOG" "metadata://netarkivet.dk/twitter-api?tool=wget&output=log&job=${JOB}&harvestTime=${DATETIME}" "text/plain ; wget log" | maybe_gzip >> "$META"
         else
-            echo "   - unable to locate wget log: $WGET_LOG"
+            echo "   - Unable to locate wget log: $WGET_LOG"
         fi
+
+        # Include the script responsible for controlling resource harvest
+        SCRIPTS="harvest_resources.sh $SCRIPTS"
     else
         echo "    - Unable to locate resources $RESOURCES"
     fi
+
+    # Add scripts (normally base scripts + cron script)
+    for SCRIPT in $SCRIPTS $BASE_META_INCLUDES; do
+        if [[ " " == "$SCRIPT" ]]; then # Ignore blanks
+            continue
+        fi
+        if [[ ! -s "$SCRIPT" ]]; then
+            echo "   - Skipping addition of script '$SCRIPT' to $META as it could not be located"
+            continue
+        fi
+        echo "   - Adding script '$SCRIPT' to $META"
+        ensure_meta_header "$META"
+        print_file_resource "$JSON_WARC_UUID" "$SCRIPT" "metadata://netarkivet.dk/twitter-api?tool=tweets2warc&output=${SCRIPT}&job=${JOB}&harvestTime=${DATETIME}" "application/x-shellscript ; harvest script" | maybe_gzip >> "$META"
+    done
 }
 
 warc_single()  {
@@ -312,7 +339,7 @@ warc_single()  {
             echo " - Overwriting existing WARC for $TFILE as FORCE=true"
             json_to_warc "$TFILE" "$WARC"
         else
-            echo " - Skipping $WARC as it has already been converted"
+            echo " - Skipping $WARC as it has already been converted to $WARC"
         fi
     else
         json_to_warc "$TFILE" "$WARC"
@@ -343,5 +370,4 @@ warc_all() {
 ###############################################################################
 
 check_parameters "$@"
-
 warc_all "$@"
