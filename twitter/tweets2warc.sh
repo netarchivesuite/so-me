@@ -161,6 +161,7 @@ EOF
     echo "${CR}"
     rm "$TFILE"
 }
+# TODO: Link this to the WARCs with twitter-json and resources
 
 print_meta_header() {
     local T=$(mktemp)
@@ -176,7 +177,6 @@ WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/warc-fields${CR}
 Content-Length: $(wc -c < "$T")${CR}
-TODO: Link this to the WARCs with twitter-json and resources
 ${CR}
 EOF
     cat "$T"
