@@ -346,7 +346,7 @@ create_meta() {
 
 warc_single()  {
     TFILE="$1"
-    echo "Processing $TFILE"
+    echo " - tweet2warc.sh processing $TFILE"
 
     local BASE="${TFILE%.*}"
     if [[ "${BASE: -5}" == ".json" ]]; then
