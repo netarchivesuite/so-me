@@ -23,6 +23,7 @@ fi
 : ${HANDLES:="$1"}
 : ${OUTBASE:="twitter_timeline"}
 : ${OUTDESIGNATION:="$2"}
+: ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
