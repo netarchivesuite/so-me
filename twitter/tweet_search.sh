@@ -23,6 +23,7 @@ fi
 : ${OUTBASE:="twitter_search"}
 : ${OUT_FOLDER:="."}
 : ${OUTDESIGNATION:="$2"}
+: ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
@@ -66,7 +67,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
+    timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
 }
 
 ###############################################################################
