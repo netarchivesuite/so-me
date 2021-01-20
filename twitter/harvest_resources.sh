@@ -20,6 +20,8 @@ fi
 : ${QUOTA_MIN:="50"} # Minimum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_MAX:="500"} # Maximum quota (MB) regardless of tweet count in a single tweets-file
 : ${QUOTA_PER_TWEET:="10"} # MB
+: ${QUOTA_MAX_URLS:="999999999"} # Maximum number of URLs to harvest with wget
+
 : ${TIMEOUT:="60"} # Connection/idle timeout in seconds
 : ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
@@ -63,9 +65,9 @@ prioritize() {
     grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
     if [[ "$IMAGES_ONLY" == "true" ]]; then
         echo "   - Keeping only images at IMAGES_ONLY==true"
-        cat "$T_I" > "$LINKS"
+        cat "$T_I" | head -n $QUOTA_MAX_URLS > "$LINKS"
     else
-        cat "$T_I" "$T_R" > "$LINKS"
+        cat "$T_I" "$T_R" | head -n $QUOTA_MAX_URLS > "$LINKS"
     fi
     rm "$T_I" "$T_R"
 }
