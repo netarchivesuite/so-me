@@ -339,6 +339,8 @@ create_meta() {
         ensure_meta_header "$META"
         print_file_resource "$JSON_WARC_UUID" "$TJ" "metadata://netarkivet.dk/twitter-api?tool=twarc&output=jsonl&job=${JOB}&harvestTime=${DATETIME}" "application/x-ndjson ; Twitter API JSON Stream" | maybe_gzip >> "$META"
         rm "$TJ"
+    else
+        echo "   - Skipping addition of Twitter JSON stream '$JSON_STREAM' to $META because INCLUDE_TWEET_STREAM=false"
     fi
 }
 
@@ -366,7 +368,7 @@ warc_single()  {
     fi
 
     # Meta contains logs etc.
-    local META="${BASE}.meta.warc.gz"
+    local META="${BASE}.metadata.warc.gz"
     if [[ -s "$META" && "true" != "$FORCE" ]]; then
         echo " - Skipping meta file $META as it has already been created"
     else
