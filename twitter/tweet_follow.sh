@@ -27,7 +27,7 @@ fi
 : ${OUT_FOLDER:="."}
 : ${OUTDESIGNATION:="$2"}
 : ${OUTDESIGNATION:="noname"}
-: ${RUNTIME:="3780"} # Seconds
+: ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${TWARC:="$(which twarc)"}
 : ${LOOKUP_CHUNK_SIZE:="200"}
