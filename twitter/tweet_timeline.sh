@@ -57,7 +57,10 @@ check_parameters() {
         usage 2
     fi
     : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
-    : ${OUT:="${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}.json"}
+    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
+    : ${OUT:="${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
+
 }
 
 ################################################################################
@@ -68,8 +71,7 @@ export_timelines() {
     echo "Exporting timelines for the given handles and piping to $OUT"
     while read -r HANDLE; do
         echo " - Getting timeline for $HANDLE"
-        $TWARC $TWARC_OPTIONS timeline "$HANDLE" >> $OUT
-        #echo "$TWARC $TWARC_OPTIONS timeline \"$HANDLE\" > $OUT"
+        timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
     done <<< "$(tr ',' '\n' <<< "$HANDLES")"
 }
 
