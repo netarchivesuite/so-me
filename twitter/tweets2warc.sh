@@ -10,7 +10,6 @@
 #
 
 # TODO: Add option for packing multiple tweet-collections into a single WARC.
-# TODO: Generate Last-Modified: Sun, 28 Dec 2014 22:40:37 GMT^M
 
 
 ###############################################################################
@@ -124,18 +123,6 @@ EOF
 print_tweet_warc_entry() {
     local TWEET="$1"
 
-    # Generate payload. Note the single CR dividing header & record and the two CRs postfixinf the content
-    # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
-    local TFILE=$(mktemp)
-cat > "$TFILE" <<EOF    
-HTTP/1.1 200 OK${CR}
-Content-Type: application/json; format=twitter_tweet${CR}
-Content-Length: $(bytes "$TWEET")${CR}
-X-WARC-signal: twitter_tweet${CR}
-${CR}
-EOF
-    echo "$TWEET" >> "$TFILE"
-
     # Resolve URL & timestamp
     local T_USER=$(jq -r .user.screen_name <<< "$TWEET")
     local T_ID=$(jq -r .id_str <<< "$TWEET")
@@ -144,6 +131,22 @@ EOF
     # "created_at": "Fri Mar 02 10:26:13 +0000 2018",
     local T_TS=$(jq -r .created_at <<< "$TWEET")
     local TIMESTAMP="$(TZ=UTZ date --date="$T_TS" +%Y-%m-%dT%H:%M:%S)Z"
+    TIMESTAMP_HTTP="$(LC_ALL=C.UTF-8 TZ=GMT date -d "$T_TS" +"%a, %d %b %Y %H:%M:%S %Z")"
+
+    # Generate payload. Note the single CR dividing header & record and the two CRs postfixinf the content
+    # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#file-and-record-model
+    local TFILE=$(mktemp)
+cat > "$TFILE" <<EOF    
+HTTP/1.1 200 OK${CR}
+Content-Type: application/json; format=twitter_tweet${CR}
+Last-Modified: ${TIMESTAMP_HTTP}${CR}
+Content-Length: $(bytes "$TWEET")${CR}
+X-WARC-signal: twitter_tweet${CR}
+${CR}
+EOF
+    echo "$TWEET" >> "$TFILE"
+
+
     # WARC-IP-Address: 46.30.212.172
 
     # Generate WARC-record headers
