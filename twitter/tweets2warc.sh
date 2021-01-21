@@ -270,8 +270,6 @@ create_meta() {
     local BASE="$2"
     local JSON_WARC="$3"
     local JSON_STREAM="$4"
-
-    
     
     rm -rf "$META"
     echo " - Generating meta WARC $META"
