@@ -101,7 +101,7 @@ print_tweets_warc_header() {
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
-resources-warc: ${RESOURCES}${CR}
+resources-warc: $(basename ${RESOURCES})${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
@@ -174,8 +174,8 @@ print_meta_header() {
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
-tweets-warc: ${WARC}${CR}
-resources-warc: ${RESOURCES}${CR}
+tweets-warc: $(basename ${WARC})${CR}
+resources-warc: $(basename ${RESOURCES})${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
