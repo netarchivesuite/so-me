@@ -368,7 +368,7 @@ warc_single()  {
     fi
 
     # Meta contains logs etc.
-    local META="${BASE}.metadata.warc.gz"
+    local META="${BASE}.metadata-1.warc.gz"
     if [[ -s "$META" && "true" != "$FORCE" ]]; then
         echo " - Skipping meta file $META as it has already been created"
     else
