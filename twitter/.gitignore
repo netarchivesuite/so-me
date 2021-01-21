@@ -2,3 +2,4 @@
 *.json
 twitter.conf
 twitter_handles.dat
+credentials.sh
