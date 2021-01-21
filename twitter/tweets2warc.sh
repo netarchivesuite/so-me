@@ -39,7 +39,7 @@ usage() {
     cat <<EOF
 Re-packages Twitter tweet-JSON, as delivered by twarc, into WARCs.
 
-Usage: ./tweets2warc.sh tweets_json*
+Usage: JOB="majorjob" SCRIPTS="callingscript.sh" ./tweets2warc.sh tweets_json*
 EOF
     exit $1
 }
@@ -96,17 +96,19 @@ sha1_32_string() {
 
 # TODO: CRLF-separator
 # http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinfo
-print_warc_header() {
+print_tweets_warc_header() {
     local T=$(mktemp)
     cat > "$T" <<EOF
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
+resources-warc: ${RESOURCES}${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
 WARC-Type: warcinfo${CR}
 WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
+WARC-Filename: ${WARC}${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/warc-fields${CR}
 Content-Length: $(wc -c < "$T")${CR}
@@ -169,11 +171,14 @@ print_meta_header() {
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
+tweets-warc: ${WARC}${CR}
+resources-warc: ${RESOURCES}${CR}
 EOF
     cat <<EOF
 WARC/1.0${CR}
 WARC-Type: warcinfo${CR}
 WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
+WARC-Filename: ${META}${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/warc-fields${CR}
 Content-Length: $(wc -c < "$T")${CR}
@@ -229,7 +234,7 @@ json_to_warc() {
     local T=$(mktemp)
     echo " - Converting $TWEETS to $WARC"
 
-    print_warc_header | maybe_gzip > "$WARC"
+    print_tweets_warc_header | maybe_gzip > "$WARC"
     # https://stackoverflow.com/questions/10929453/read-a-file-line-by-line-assigning-the-value-to-a-variable
     # TODO: Figure out how to bypass the stupid temporary file. How do we iterate lines from zcat output? IFS=$'\n' does not help
     zcat -f "$TWEETS" > "$T"
@@ -245,7 +250,7 @@ ensure_meta_header() {
     if [[ -s "$META" ]]; then
         return
     fi
-    print_meta_header | maybe_gzip > "$META"
+    META="$META" print_meta_header | maybe_gzip > "$META"
 }
 
 # Input a WARC file
@@ -256,12 +261,15 @@ get_warcinfo_uuid() {
     zcat "$WARC" | head -c 1000 | grep -a -m 1 "WARC-Record-ID" | cut -d\  -f2
 }
 
+# RESOURCES must be set
 create_meta() {
     local META="$1"
     local BASE="$2"
     local JSON_WARC="$3"
     local JSON_STREAM="$4"
 
+    
+    
     rm -rf "$META"
     echo " - Generating meta WARC $META"
     
@@ -282,10 +290,6 @@ create_meta() {
     fi
 
     # Add metadata for the resources WARC + links + wget log + harvest script
-    local RESOURCES="${BASE}.resources.warc.gz"
-    if [[ ! -s "$RESOURCES" ]]; then
-        local RESOURCES="${BASE}.resources.warc" # Legacy handling
-    fi        
     if [[ -s "$RESOURCES" ]]; then
         local RESOURCES_WARC_UUID=$(get_warcinfo_uuid "$RESOURCES")
         if [[ -z "$RESOURCES_WARC_UUID" ]]; then
@@ -356,6 +360,16 @@ warc_single()  {
     if [[ "true" == "$WARC_GZ" ]]; then
         WARC="${WARC}.gz"
     fi
+
+    local RESOURCES="${BASE}.resources.warc.gz"
+    if [[ ! -s "$RESOURCES" ]]; then
+        RESOURCES="${BASE}.resources.warc" # Legacy handling
+        if [[ ! -s "$RESOURCES" ]]; then
+            RESOURCES="null"
+        fi
+    fi   
+
+
     if [[ -s "$WARC" || -s "${WARC}.gz" ]]; then
         if [[ "true" == "$FORCE" ]]; then
             echo " - Overwriting existing WARC for $TFILE as FORCE=true"
