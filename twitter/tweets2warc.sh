@@ -107,7 +107,7 @@ EOF
 WARC/1.0${CR}
 WARC-Type: warcinfo${CR}
 WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
-WARC-Filename: ${WARC}${CR}
+WARC-Filename: $(basename ${WARC})${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/warc-fields${CR}
 Content-Length: $(wc -c < "$T")${CR}
@@ -181,7 +181,7 @@ EOF
 WARC/1.0${CR}
 WARC-Type: warcinfo${CR}
 WARC-date: $(TZ=UTC date +%Y-%m-%dT%H:%M:%S)Z${CR}
-WARC-Filename: ${META}${CR}
+WARC-Filename: $(basename ${META})${CR}
 WARC-Record-ID: <urn:uuid:$(uuidgen)>${CR}
 Content-Type: application/warc-fields${CR}
 Content-Length: $(wc -c < "$T")${CR}
