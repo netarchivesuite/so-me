@@ -77,6 +77,7 @@ create_metafile() {
     cat > "$TFILE" <<EOF    
 software: so-me/twitter (https://github.com/netarchivesuite/so-me)${CR}
 description: Tweets and profiles harvested from Twitter API and related material harvested using wget${CR}
+format: http://id.kb.dk/cases/twitter.html${CR}
 hostname: $(hostname)${CR}
 datetime: $(date +"%Y-%m-%dT%H:%M:%S:%:z")${CR}
 isPartOf: ${WFN}${CR}
