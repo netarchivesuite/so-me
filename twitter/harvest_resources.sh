@@ -24,6 +24,7 @@ fi
 
 : ${TIMEOUT:="60"} # Connection/idle timeout in seconds
 : ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
+: ${PROFILE_IMAGE_REGEXP:='.*https://pbs.twimg.com/profile_images/.*'}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
 : ${IMAGES_ONLY:="false"} # If true, only images are harvested)
 : ${WGET:="$(which wget)"}
@@ -60,8 +61,17 @@ prioritize() {
 
     echo "   - Prioritizing images above all else in $LINKS"
     local T_I=$(mktemp)
+    local T_I_SORTED=$(mktemp)
     local T_R=$(mktemp)
+
+    # Extract all images
     grep -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_I"
+    # Ensure the profile images are at the top of the image list
+    grep -i -E "${PROFILE_IMAGE_REGEXP}" "$T_I" > "$T_I_SORTED"
+    grep -v -i -E "${PROFILE_IMAGE_REGEXP}" "$T_I" >> "$T_I_SORTED"
+    mv "$T_I_SORTED" "$T_I"
+
+    # Everything not images
     grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
     if [[ "$IMAGES_ONLY" == "true" ]]; then
         echo "   - Keeping only images at IMAGES_ONLY==true"
