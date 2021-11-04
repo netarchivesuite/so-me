@@ -24,8 +24,11 @@ fi
 
 : ${TIMEOUT:="60"} # Connection/idle timeout in seconds
 : ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
+
 : ${PROFILE_IMAGE_REGEXP:='.*https://pbs.twimg.com/profile_images/.*'}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
+: ${TWITTER_MEDIA_REGEXP:='.*\.twimg[.]com.*'} # Yes, twimg.com also holds videos
+
 : ${IMAGES_ONLY:="false"} # If true, only images are harvested)
 : ${WGET:="$(which wget)"}
 popd > /dev/null
@@ -62,6 +65,7 @@ prioritize() {
     echo "   - Prioritizing images above all else in $LINKS"
     local T_I=$(mktemp)
     local T_I_SORTED=$(mktemp)
+    local T_R_SORTED=$(mktemp)
     local T_R=$(mktemp)
 
     # Extract all images
@@ -73,6 +77,11 @@ prioritize() {
 
     # Everything not images
     grep -v -i -E "${IMAGE_REGEXP}" "$LINKS" > "$T_R"
+    # Ensure material on Twitter (shown directly in the tweet) are at the top
+    grep -i -E "${TWITTER_MEDIA_REGEXP}" "$T_R" > "$T_R_SORTED"
+    grep -v -i -E "${TWITTER_MEDIA_REGEXP}" "$T_R" >> "$T_R_SORTED"
+    mv "$T_R_SORTED" "$T_R"
+    
     if [[ "$IMAGES_ONLY" == "true" ]]; then
         echo "   - Keeping only images at IMAGES_ONLY==true"
         cat "$T_I" | head -n $QUOTA_MAX_URLS > "$LINKS"
@@ -113,9 +122,8 @@ harvest() {
     mkdir -p "$WT"
     echo " - Resolving resources for $TFILE" | tee -a "$LOG"
     echo "   - Extracting links to $LINKS" | tee -a "$LOG"
-    # TODO: .extended_tweet.extended_entities.media[].video_info.variants[].url
-    # TODO: .extended_tweet.entities.media[].video_info.variants[].url
-    zcat -f "$TFILE" | jq -r '..|.expanded_url?, .media_url?, .media_url_https?, .profile_image_url_https?, .profile_background_image_url_https?, .profile_banner_url?' | grep -v 'null' | grep -v '^$' | grep -v '.*twitter.com/.*/status/.*' | sort | uniq > "$LINKS"
+    # TODO: Consider only keeping one version of each video instead of all variants
+    zcat -f "$TFILE" | jq -r '..|.expanded_url?, .media_url?, .media_url_https?, .profile_image_url_https?, .profile_background_image_url_https?, .profile_banner_url?, try .extended_tweet.extended_entities.media[].video_info.variants[].url, try .extended_entities.media[].video_info.variants[].url, try .extended_tweet.entities.media[].video_info.variants[].url, try .entities.media[].video_info.variants[].url' | grep -v 'null' | grep -v '^$' | grep -v '.*twitter.com/.*/status/.*' | sort | uniq > "$LINKS"
     expand_large_profile_images "$LINKS"
     prioritize "$LINKS"
     local TCOUNT=$(wc -l < "$LINKS")
