@@ -1,0 +1,19 @@
+; Profiles to follow
+;
+; Profile handles can be divided with newlines or comma. Leading @ is optional
+;
+; Empty lines, spaces and comment-lines (lines starting with ;) are ignored
+
+
+; Misc. profiles
+aeldresagen
+radio4dk
+
+; Danish politicians with handles starting with 's'
+stephanie_lose, stinelinnemann, StigGrenov, StineHelles, stine_isaksen, stinuslindgreen
+
+; Danish police profiles
+@vestegnspoliti
+@danskpoliti
+@rigspoliti
+@kobenhavnpoliti
