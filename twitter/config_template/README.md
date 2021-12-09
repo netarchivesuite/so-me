@@ -16,6 +16,9 @@ Contains OAuth-tokens from Twitter. These are tied to Twitter profiles and can a
 for posting Tweets etc., so guard them carefully. If the project is newly started, copy 
 `credentials.template` to `credentials.sh` and add credential tokens to the file.
 
+The information for the creds can be found in ~/.twarc after a successful run of the twarc tool.
+
+
 ### `type_CI_filename.txt`
 
 List of tags or profiles to harvest for the given credentials-index. The parts of the filename are
