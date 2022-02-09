@@ -312,6 +312,8 @@ create_status_page() {
 </ul>
 This status page is statically generated and will only update at next cron call.
 
+Harvest setup controlled from <a href="https://github.com/kb-dk/twitter-config">twitter-config</a>.
+
 <h2>Last 50 log entries</h2>
 <pre>
 $(tail -n 50 "$LOG" | escape)
