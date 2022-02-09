@@ -10,7 +10,7 @@
 #
 #
 
-# TODO: Try to chug along even on fatal errors?
+# TODO: Correct formatting of missing handles to remove faulty links
 
 pushd ${BASH_SOURCE%/*} > /dev/null
 set -o pipefail
@@ -43,6 +43,20 @@ log() {
 
 fail() {
     log "Fatal error: $1"
+    cat > "$STATUS_PAGE" <<EOF
+<html>
+<head><title>Twitter harvest status</title></head>
+<body>
+<h1>Twitter harvest status</h1>
+<p>Updated $(date +"%Y-%m-%d %H:%M")</p>
+<h2>Fatal error: $1</h2>
+
+<h2>Last 50 log entries</h2>
+<pre>
+$(tail -n 50 "$LOG" | escape)
+</pre>
+</body>
+EOF
     exit $2
 }
 
@@ -173,8 +187,8 @@ batch_job() {
     elif [[ "profiles" == "$JOBTYPE" ]]; then
         if [[ "true" == "$PERFORM_BATCH" ]]; then
             log "Starting batch harvest for profile job $JOB with $(wc -l < "$JOB") entries"
-#            echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_filter.sh \"$(commarize "$JOB")\" \"${JOBNAME}\" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &\""
-            TWARC_OPTIONS="$CREDS" ./tweet_filter.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
+#            echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_follow.sh \"$(commarize "$JOB")\" \"${JOBNAME}\" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &\""
+            TWARC_OPTIONS="$CREDS" ./tweet_follow.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
             STARTED_BATCH=$((STARTED_BATCH+1))
         else
             log "Skipping batch harvest for profile $JOB ($(wc -l < "$JOB") entries) as PERFORM_BATCH==$PERFORM_BATCH"
@@ -278,6 +292,12 @@ escape() {
     sed -e 's/&/&amp;/g' -e 's/</&lt;/g' -e 's/>/&gt;/g'
 }
 
+last_produced() {
+    pushd "$OUT_FOLDER" > /dev/null
+    ls -lart | tail -n 100 | escape
+    popd > /dev/null
+}
+
 create_status_page() {
     log "Creating status page at $STATUS_PAGE"
     cat > "$STATUS_PAGE" <<EOF
@@ -296,6 +316,15 @@ This status page is statically generated and will only update at next cron call.
 <pre>
 $(tail -n 50 "$LOG" | escape)
 </pre>
+
+<h2>Last line with "Resolving missing handles" from twitter_handles.log</h2>
+
+<tt>$(tac twitter_handles.log | grep -m 1 "Resolving missing handles" | sed 's/\([a-zA-Z0-9_]\+\)/ <a href="https:\/\/twitter.com\/\1">\1<\/a>/g')</tt>
+
+<h2>Last 100 produced files (from earlier runs)</h2>
+<pre>
+$(last_produced)
+</pre>
 </body>
 EOF
 }
@@ -311,7 +340,7 @@ pushd ${BASH_SOURCE%/*} > /dev/null
 prepare_jobs
 batch_jobs
 onetime_jobs
-log "Onetime- and batch-jobs activated"
+log "All onetime- and batch-jobs activated"
 create_status_page
 log "Exiting controller script"
 popd > /dev/null
