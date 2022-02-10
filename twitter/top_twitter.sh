@@ -63,17 +63,23 @@ check_parameters() {
 # FUNCTIONS
 ################################################################################
 
+# https://stackoverflow.com/questions/41599314/ignore-unparseable-json-with-jq
+# zcats the input files, outputting only lines with valid JSON
+safe_json() {
+    zcat -f "$@" | jq -R "fromjson? | . " -c
+}
+
 authors_by() {
     local T=$(mktemp)
     case "$TOPTYPE" in
         authors_by_followers)
-            zcat -f "$@" | jq --indent 0 '[.user.screen_name,.user.followers_count]' | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
+            safe_json "$@" | jq --indent 0 '[.user.screen_name,.user.followers_count]' 2> /dev/null | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
             ;;
         authors_by_profile_likes)
-            zcat -f "$@" | jq --indent 0 '[.user.screen_name,.user.favourites_count]' | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
+            safe_json "$@" | jq --indent 0 '[.user.screen_name,.user.favourites_count]' 2> /dev/null | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
             ;;
         authors_by_profile_tweets)
-            zcat -f "$@" | jq --indent 0 '[.user.screen_name,.user.statuses_count]' | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
+            safe_json "$@" | jq --indent 0 '[.user.screen_name,.user.statuses_count]' 2> /dev/null | tr -d '"' | tr -d '[' | tr -d ']' | tr ',' ' ' | LC_ALL=C sort -k2,2n -k1 | tac > "$T"
             ;;
         *)
             >&2 echo "Unknown TOPTYPE '$TOPTYPE'"
@@ -98,19 +104,19 @@ calculate_top_x() {
     local T=$(mktemp)
     case "$TOPTYPE" in
         tags)
-            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.hashtags[].text else .entities.hashtags[].text end' | tr '[[:upper:]]' '[[:lower:]]' | sort | uniq -c | sort -rn > "$T"
+            safe_json "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.hashtags[].text else .entities.hashtags[].text end' 2> /dev/null | tr '[[:upper:]]' '[[:lower:]]' | sort | uniq -c | sort -rn > "$T" 
             ;;
         links)
-            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.urls[].expanded_url else .entities.urls[].expanded_url end' | sort | uniq -c | sort -rn > "$T"
+            safe_json "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.urls[].expanded_url else .entities.urls[].expanded_url end' 2> /dev/null | sort | uniq -c | sort -rn > "$T"
             ;;
         mentions)
-            zcat -f "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.user_mentions[].screen_name else .entities.user_mentions[].screen_name end' | sort | uniq -c | sort -rn > "$T"
+            safe_json "$@" | jq -r 'if .extended_tweet then .extended_tweet.entities.user_mentions[].screen_name else .entities.user_mentions[].screen_name end' 2> /dev/null | sort | uniq -c | sort -rn > "$T"
             ;;
         authors_by_tweets)
-            zcat -f "$@" | jq -r '.user.screen_name' | sort | uniq -c | sort -rn > "$T"
+            safe_json "$@" | jq -r '.user.screen_name' 2> /dev/null | sort | uniq -c | sort -rn > "$T"
             ;;
         authors_by_replies)
-            zcat -f "$@" | jq -r '.in_reply_to_screen_name' | grep -v "null" | sort | uniq -c | sort -rn > "$T"
+            safe_json "$@" | jq -r '.in_reply_to_screen_name' 2> /dev/null | grep -v "null" | sort | uniq -c | sort -rn > "$T"
             ;;
         authors_by_*)
             authors_by "$@" > "$T"
