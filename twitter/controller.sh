@@ -30,6 +30,10 @@ fi
 : ${STATUS_PAGE:="twitter_status.html"}
 : ${BEFORE:=""} # If defined, this script will be called before processing
 
+# Used for statistics in report
+: ${TOPX:="20"}
+: ${TOP_FILES:="harvests/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz harvests/*_$(date +"%Y%m%d")-*.json.gz"}
+
 # Used for status generation
 STARTED_ONETIME=0
 STARTED_BATCH=0
@@ -298,6 +302,55 @@ last_produced() {
     popd > /dev/null
 }
 
+# Timestamp for the latest change to files in the config folder
+config_last_changed() {
+   find "$CONF_FOLDER" -type f -exec stat \{} --printf="%y\n" \; | sort -n -r | head -n 1 | grep -o "[1-9][0-9]\{3\}-[01][0-9]-[0-3][0-9] [012][0-9]:[0-6][0-9]"
+} 
+
+to_tags() {
+    sed 's/\s*\([0-9]*\) \(.*\)/<tr><td>\1<\/td> <td><a href="https:\/\/twitter.com\/search?q=%23\2\&f=live">#\2<\/a><\/td><\/tr>/'
+}
+to_profile() {
+    sed 's/\s*\([0-9]*\) \(.*\)/<tr><td>\1<\/td> <td><a href="https:\/\/twitter.com\/\2">@\2<\/a><\/td><\/tr>/'
+}
+to_link() {
+    sed 's/\s*\([0-9]*\) \(.*\)/<tr><td>\1<\/td> <td><a href="\2">\2<\/a><\/td><\/tr>/'
+}
+
+# Output statistics from harvested tweets
+all_tops() {
+    cat <<EOF
+<h2>Assorted statistics from the last 2 days of Twitter API harvests</h2>
+
+<div style="width: 15em; float: left">
+  <h3>Tags</h3>
+    <table>
+    $(TOPX=$TOPX TOPTYPE=tags ./top_twitter.sh $TOP_FILES | to_tags)
+    </table>
+</div>
+
+<div style="width: 15em; float: left">
+  <h3>Authors by tweets</h3>
+    <table>
+    $(TOPX=$TOPX TOPTYPE=authors_by_tweets ./top_twitter.sh $TOP_FILES | to_profile)
+    </table>
+</div>
+
+<div style="width: 15em; float: left">
+  <h3>Authors by replies</h3>
+    <table>
+    $(TOPX=$TOPX TOPTYPE=authors_by_replies ./top_twitter.sh $TOP_FILES | to_profile)
+    </table>
+</div>
+
+  <h3 style="clear: both; padding-top: 1em">Top $TOPX links</h3>
+    <table>
+    $(TOPX=$TOPX TOPTYPE=links ./top_twitter.sh $TOP_FILES | to_link)
+    </table>
+EOF
+}
+
+
 create_status_page() {
     log "Creating status page at $STATUS_PAGE"
     cat > "$STATUS_PAGE" <<EOF
@@ -305,10 +358,11 @@ create_status_page() {
 <head><title>Twitter harvest status</title></head>
 <body>
 <h1>Twitter harvest status</h1>
-<p>Updated $(date +"%Y-%m-%d %H:%M")</p>
+<p>Status pdated $(date +"%Y-%m-%d %H:%M")</p>
 <ul>
 <li>Started batch jobs (will run for ~${RUNTIME} seconds): $STARTED_BATCH</li>
 <li>Started onetime jobs (will finish when completed): $STARTED_ONETIME</li>
+<li>Job definitions last updated: $(config_last_changed)</li>
 </ul>
 This status page is statically generated and will only update at next cron call.
 
@@ -322,6 +376,8 @@ $(tail -n 50 "$LOG" | escape)
 <h2>Last line with "Resolving missing handles" from twitter_handles.log</h2>
 
 <tt>$(tac twitter_handles.log | grep -m 1 "Resolving missing handles" | sed 's/\([a-zA-Z0-9_]\+\)/ <a href="https:\/\/twitter.com\/\1">\1<\/a>/g')</tt>
+
+$(all_tops)
 
 <h2>Last 100 produced files (from earlier runs)</h2>
 <pre>
