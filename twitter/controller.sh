@@ -304,7 +304,7 @@ last_produced() {
 
 # Timestamp for the latest change to files in the config folder
 config_last_changed() {
-   find "$CONF_FOLDER" -type f -exec stat \{} --printf="%y\n" \; | sort -n -r | head -n 1 | grep -o "[1-9][0-9]\{3\}-[01][0-9]-[0-3][0-9] [012][0-9]:[0-6][0-9]"
+   find "$CONF_FOLDER" -type f -iname "*.txt" -exec stat \{} --printf="%y\n" \; | sort -n -r | head -n 1 | grep -o "[1-9][0-9]\{3\}-[01][0-9]-[0-3][0-9] [012][0-9]:[0-6][0-9]"
 } 
 
 to_tags() {
@@ -374,8 +374,10 @@ $(tail -n 50 "$LOG" | escape)
 </pre>
 
 <h2>Last line with "Resolving missing handles" from twitter_handles.log</h2>
-
+<p>These profiles has probably been abandoned or suspended. Consider removing them from the definitions, but do remember that suspensions can be temporary.</p>
+<p>
 <tt>$(tac twitter_handles.log | grep -m 1 "Resolving missing handles" | sed 's/\([a-zA-Z0-9_]\+\)/ <a href="https:\/\/twitter.com\/\1">\1<\/a>/g')</tt>
+</p>
 
 $(all_tops)
 
