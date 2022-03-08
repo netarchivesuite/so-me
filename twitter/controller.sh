@@ -358,7 +358,7 @@ create_status_page() {
 <head><title>Twitter harvest status</title></head>
 <body>
 <h1>Twitter harvest status</h1>
-<p>Status pdated $(date +"%Y-%m-%d %H:%M")</p>
+<p>Status updated $(date +"%Y-%m-%d %H:%M")</p>
 <ul>
 <li>Started batch jobs (will run for ~${RUNTIME} seconds): $STARTED_BATCH</li>
 <li>Started onetime jobs (will finish when completed): $STARTED_ONETIME</li>
