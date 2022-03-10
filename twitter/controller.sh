@@ -23,6 +23,7 @@ if [[ -s "twitter.conf" ]]; then
     source twitter.conf
 fi
 : ${LOG:="twitter_cron.log"}
+: ${LOG_ONETIME:="twitter_ONETIME.log"}
 : ${CONF_FOLDER:="config"}
 : ${CREDENTIALS_FILE:="${CONF_FOLDER}/credentials.sh"}
 : ${PERFORM_ONETIME:="true"} # If true, historical harvests are performed for ONETIME
@@ -42,14 +43,19 @@ STARTED_BATCH=0
 # by check_parameters
 log() {
     echo "$(date +%Y-%m-%dT%H:%M:%S) $1" >> "$LOG"
-#    echo "$1" ## TODO Remove this
+}
+log_onetime() {
+    echo "$(date +%Y-%m-%dT%H:%M:%S) $1" >> "$LOG_ONETIME"
 }
 
 fail() {
     log "Fatal error: $1"
     cat > "$STATUS_PAGE" <<EOF
 <html>
-<head><title>Twitter harvest status</title></head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Twitter harvest status</title>
+</head>
 <body>
 <h1>Twitter harvest status</h1>
 <p>Updated $(date +"%Y-%m-%d %H:%M")</p>
@@ -130,6 +136,7 @@ onetime_job() {
             # TODO Handle https://github.com/netarchivesuite/so-me/issues/17 so that this can be collapsed
             if [[ "true" == "$PERFORM_ONETIME" ]]; then
                 log "Starting onetime harvest for tag #$TAG"
+                log_onetime "#$TAG"
 #                echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_search.sh \"#$TAG\" \"${JOBNAME}_${TAG}\" < /dev/null >> tweet_search.log 2>> tweet_search.log &\""
                 TWARC_OPTIONS="$CREDS" ./tweet_search.sh "#$TAG" "${JOBNAME}_${TAG}" < /dev/null >> tweet_search.log 2>> tweet_search.log &
                 STARTED_ONETIME=$((STARTED_ONETIME+1))
@@ -147,6 +154,7 @@ onetime_job() {
             fi
             if [[ "true" == "$PERFORM_ONETIME" ]]; then
                 log "Starting onetime harvest for profile $PROFILE"
+                log_onetime "@$PROFILE"
 #                echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_timeline.sh \"$PROFILE\" \"${JOBNAME}_${PROFILE}\" < /dev/null >> tweet_timeline.log 2>> tweet_timeline.log &\""
                 TWARC_OPTIONS="$CREDS" ./tweet_timeline.sh "$PROFILE" "${JOBNAME}_${PROFILE}" < /dev/null >> tweet_timeline.log 2>> tweet_timeline.log &
                 STARTED_ONETIME=$((STARTED_ONETIME+1))
@@ -367,6 +375,11 @@ create_status_page() {
 This status page is statically generated and will only update at next cron call.
 
 Harvest setup controlled from <a href="https://github.com/kb-dk/twitter-config">twitter-config</a>.
+
+<h2>Last 20 new tags &amp; profiles</h2>
+<pre>
+$(tail -n 20 "$LOG_ONETIME" | escape)
+</pre>
 
 <h2>Last 50 log entries</h2>
 <pre>
