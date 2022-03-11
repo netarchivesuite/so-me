@@ -361,7 +361,8 @@ EOF
 
 create_status_page() {
     log "Creating status page at $STATUS_PAGE"
-    cat > "$STATUS_PAGE" <<EOF
+    local T=$(mktemp)
+    cat > "$T" <<EOF
 <html>
 <head><title>Twitter harvest status</title></head>
 <body>
@@ -400,6 +401,8 @@ $(last_produced)
 </pre>
 </body>
 EOF
+    mv "$T" "$STATUS_PAGE"
+    chmod 755 "$STATUS_PAGE"
 }
 
 ###############################################################################
