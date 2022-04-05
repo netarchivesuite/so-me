@@ -364,7 +364,10 @@ create_status_page() {
     local T=$(mktemp)
     cat > "$T" <<EOF
 <html>
-<head><title>Twitter harvest status</title></head>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Twitter harvest status</title>
+</head>
 <body>
 <h1>Twitter harvest status</h1>
 <p>Status updated $(date +"%Y-%m-%d %H:%M")</p>
