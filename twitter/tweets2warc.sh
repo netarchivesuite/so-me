@@ -21,9 +21,11 @@ if [[ -s "twitter.conf" ]]; then
     source twitter.conf
 fi
 
-# http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinof
+# http://iipc.github.io/warc-specifications/specifications/warc-format/warc-1.0/index.html#warcinfo
 : ${WARC_OPERATOR:="The Royal Danish Library"}
 : ${WARC_SOFTWARE:="tweets2warc.sh  https://github.com/netarchivesuite/so-me/"}
+: ${CONFORMS_TO:="https://id.kb.dk/cases/twitter.html"}
+
 : ${WARC_GZ:="true"} # Whether or not to GZIP the WARC content
 : ${FORCE:="false"}  # If false, any existing WARC-representation is not overwritten
 
@@ -101,6 +103,7 @@ print_tweets_warc_header() {
 # ${CR}
 operator: ${WARC_OPERATOR}${CR}
 software: ${WARC_SOFTWARE}${CR}
+conformsTo: ${CONFORMS_TO}${CR}
 resources-warc: $(basename ${RESOURCES})${CR}
 EOF
     cat <<EOF
