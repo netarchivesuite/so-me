@@ -23,7 +23,7 @@ if [[ -s "twitter.conf" ]]; then
     source twitter.conf
 fi
 : ${LOG:="twitter_cron.log"}
-: ${LOG_ONETIME:="twitter_ONETIME.log"}
+: ${LOG_ONETIME:="twitter_onetime.log"}
 : ${CONF_FOLDER:="config"}
 : ${CREDENTIALS_FILE:="${CONF_FOLDER}/credentials.sh"}
 : ${PERFORM_ONETIME:="true"} # If true, historical harvests are performed for ONETIME
