@@ -109,6 +109,9 @@ check_parameters() {
     if [[ ${#CREDENTIALS[@]} -eq 0 ]]; then
         fail "There were 0 credentials in ${CREDENTIALS_FILE}" 11
     fi
+    if [[ ! -f "$LOG_ONETIME" ]]; then
+        touch "$LOG_ONETIME" # To avoid protests by packing script
+    fi
 }
 
 ################################################################################
