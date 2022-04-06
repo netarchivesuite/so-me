@@ -22,6 +22,7 @@ set -o pipefail
 if [[ -s "twitter.conf" ]]; then
     source twitter.conf
 fi
+: ${OUT_FOLDER:="harvests"}
 : ${LOG:="twitter_cron.log"}
 : ${LOG_ONETIME:="twitter_onetime.log"}
 : ${CONF_FOLDER:="config"}
@@ -34,7 +35,7 @@ fi
 
 # Used for statistics in report
 : ${TOPX:="20"}
-: ${TOP_FILES:="harvests/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz harvests/*_$(date +"%Y%m%d")-*.json.gz"}
+: ${TOP_FILES:="${OUT_FOLDER}/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz harvests/*_$(date +"%Y%m%d")-*.json.gz"}
 
 # Used for status generation
 STARTED_ONETIME=0
