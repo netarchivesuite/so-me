@@ -139,7 +139,7 @@ handles_to_ids() {
 
     # Check cache
     UNRESOLVED=""
-    while read -r HANDLE; do
+    tr ',' '\n' <<< "$HANDLES" | while read -r HANDLE; do
         # handle id epoch
         ID=$(grep -i "$HANDLE " twitter_handles.dat | tail -n 1 | cut -d\  -f2)
         if [[ -z $ID ]]; then
@@ -150,7 +150,7 @@ handles_to_ids() {
         else
             echo $ID
         fi
-    done <<< $(tr ',' '\n' <<< "$HANDLES")
+    done
 
     
     # All handles resolved
