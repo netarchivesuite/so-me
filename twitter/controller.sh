@@ -30,6 +30,7 @@ fi
 : ${PERFORM_BATCH:="true"}   # If true, batch harvests are performed
 : ${STATUS_PAGE:="twitter_status.html"}
 : ${BEFORE:=""} # If defined, this script will be called before processing
+: ${AFTER:=""} # If defined, this script will be called after processing. Note that harvest jobs will still be running when this script is called!
 
 # Used for statistics in report
 : ${TOPX:="20"}
@@ -81,6 +82,19 @@ before() {
     fi
     log "Calling BEFORE script '$BEFORE'"
     . "$BEFORE" &>> "$LOG"
+}
+
+# Called after the controller.sh has finished other processing, but
+# BEFORE running harvest jobs has finished
+after() {
+    if [[ -z "$AFTER" ]]; then
+        return
+    fi
+    if [[ ! -s "$AFTER" ]]; then
+        fail "The AFTER script '$AFTER' is not available" 13
+    fi
+    log "Calling AFTER script '$AFTER'"
+    . "$AFTER" &>> "$LOG"
 }
 
 check_parameters() {
@@ -421,5 +435,6 @@ batch_jobs
 onetime_jobs
 log "All onetime- and batch-jobs activated"
 create_status_page
+after
 log "Exiting controller script"
 popd > /dev/null
