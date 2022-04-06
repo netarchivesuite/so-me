@@ -2,7 +2,12 @@
 
 ## Prerequisites
 
-The scripts are in `bash` and has been tested under Ubuntu. Besides the standard shell commands for this system, `jq` and `wget` are expected to be present.
+The scripts are in `bash` and has been tested under Ubuntu. Besides the standard shell commands the following tools are needed:
+
+ * jq
+ * wget 1.14 or later
+ * base32
+ * twarc (see below)
 
 The excellent tool [twarc](https://github.com/DocNow/twarc) is used for harvesting tweets. Note that `twarc` requires a Twitter account and a registration process for using Twitter apps. Thankfully this is quite simple to do. Please refer to the GitHub page for `twarc` for installation (also available under Ubuntu using `apt-get install twarc`) and registration.
 
