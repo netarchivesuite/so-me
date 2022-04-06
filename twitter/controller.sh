@@ -35,7 +35,7 @@ fi
 
 # Used for statistics in report
 : ${TOPX:="20"}
-: ${TOP_FILES:="${OUT_FOLDER}/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz harvests/*_$(date +"%Y%m%d")-*.json.gz"}
+: ${TOP_FILES:="${OUT_FOLDER}/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz ${OUT_FOLDER}/*_$(date +"%Y%m%d")-*.json.gz"}
 
 # Used for status generation
 STARTED_ONETIME=0
