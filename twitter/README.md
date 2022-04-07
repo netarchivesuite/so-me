@@ -8,6 +8,7 @@ The scripts are in `bash` and has been tested under Ubuntu. Besides the standard
  * wget 1.14 or later
  * base32
  * twarc (see below)
+ * uuidgen, xxd, sha1sum, base32
 
 The excellent tool [twarc](https://github.com/DocNow/twarc) is used for harvesting tweets. Note that `twarc` requires a Twitter account and a registration process for using Twitter apps. Thankfully this is quite simple to do. Please refer to the GitHub page for `twarc` for installation (also available under Ubuntu using `apt-get install twarc`) and registration.
 
