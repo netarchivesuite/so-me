@@ -15,6 +15,7 @@ fi
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${HARVEST:="true"} # Harvest linked resources
 : ${OUT_FOLDER:="."} # . = current
+: ${BASE32:="$(which base32)"} # Must work like GNU coreutils base32 and accept content from stdin
 
 if [[ ! -d "$OUT_FOLDER" ]]; then
    mkdir -p "$OUT_FOLDER"
@@ -51,7 +52,7 @@ sha1_32_file() {
     local FILE="$1"
     # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
     echo -n "sha1:"
-    sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | base32
+    sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | $BASE32
 }
 
 # Input String
@@ -59,7 +60,7 @@ sha1_32_string() {
     local CONTENT="$1"
     # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
     echo -n "sha1:"
-    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | base32
+    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | $BASE32
 }
 
 

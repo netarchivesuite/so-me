@@ -34,6 +34,7 @@ fi
 : ${DATETIME=""}; # If not defined, it will be attmpted grepped from the input filename for pattern YYYYMMDD-hhmm
 : ${JOB:=""}    # Major type of job, e.g. "tweet_filter". Must be defined
 : ${INCLUDE_TWEET_STREAM:="false"} # If true, the full twitter JSON stream is included in meta
+: ${BASE32:="$(which base32)"} # Must work like GNU coreutils base32 and accept content from stdin
 popd > /dev/null
 
 usage() {
@@ -84,7 +85,7 @@ sha1_32() {
     local FILE="$1"
     # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
     echo -n "sha1:"
-    sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | base32
+    sha1sum "$FILE" | cut -d\  -f1 | xxd -r -p | $BASE32
 }
 
 # Input String
@@ -92,7 +93,7 @@ sha1_32_string() {
     local CONTENT="$1"
     # sha1:2Z46YIFNTUYSCMYN2DMMJGKJLGE3QEAJ
     echo -n "sha1:"
-    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | base32
+    sha1sum <<< "$CONTENT" | cut -d\  -f1 | xxd -r -p | $BASE32
 }
 
 # TODO: CRLF-separator
