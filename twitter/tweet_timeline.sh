@@ -28,6 +28,7 @@ fi
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
 : ${TWARC_OPTIONS:=""} # Optional extra options
+: ${NOBUFFER:="stdbuf -oL -eL"}
 
 source tweet_common.sh
 popd > /dev/null
@@ -71,7 +72,7 @@ export_timelines() {
     echo "Exporting timelines for the given handles and piping to $OUT"
     while read -r HANDLE; do
         echo " - Getting timeline for $HANDLE"
-        timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
+        $NOBUFFER timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
     done <<< "$(tr ',' '\n' <<< "$HANDLES")"
 }
 

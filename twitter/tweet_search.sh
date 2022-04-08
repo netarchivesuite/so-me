@@ -28,6 +28,7 @@ fi
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
 : ${TWARC:="$(which twarc)"}
 : ${TWARC_OPTIONS:=""} # Optional extra options
+: ${NOBUFFER:="stdbuf -oL -eL"}
 
 source tweet_common.sh
 popd > /dev/null
@@ -67,7 +68,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
+    $NOBUFFER timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
 }
 
 ###############################################################################

@@ -24,6 +24,7 @@ fi
 
 : ${TIMEOUT:="60"} # Connection/idle timeout in seconds
 : ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
+: ${NOBUFFER:="stdbuf -oL -eL"}
 
 : ${PROFILE_IMAGE_REGEXP:='.*https://pbs.twimg.com/profile_images/.*'}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}
@@ -138,7 +139,7 @@ harvest() {
     $WGET --version >> "$LOG"
     echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
     echo "timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
-    timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
+    $NOBUFFER timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
     if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
         echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"
