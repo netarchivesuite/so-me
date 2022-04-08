@@ -179,6 +179,15 @@ The script `cron_job_sample.sh` demonstrates harvests using Danish politica-rela
 
 The tags and persons are chosen by bootstrapping with `dkpol`, `dkgreen` and a few other commonly used Danish tags on politics. After a few initial harvests, the top-20 tags and handles were extracted (and manually pruned for noise) and the harvest-setup extended with these. This was repeated 2-3 times. The tags and handles selection should not be seen as authoritative in any way.
 
+### Curator support
+
+The script `controller.sh` is an advanced version of `cron_job_sample.sh`, which relies on a folder with job definitions. The job definition folder should be under ersion control and
+changes should be pulled before `controller.sh` is activated.
+
+
+### Note on network drives
+
+The combination of the `timeout` command and the `twarc` tool works poorly with network drives with large write caches: Some tweets might not be flushed to the output file, eventhough they have been fetched. The current solution (hack really) is to set the property `FLUSH_FOLDER` to a local drive, e.g. `/tmp`. Output from the `twarc` tool will be piped to a file on that location and afterwards moved to the end location.
 
 ## Solr-index
 
