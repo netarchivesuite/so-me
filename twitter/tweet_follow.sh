@@ -68,10 +68,10 @@ check_parameters() {
 
     : ${OUT_PROFILES:="${OUT_FOLDER}/${OUT_PRE}_profiles_${OUT_JSON}.gz"}
     : ${OUT_FLUSH_PROFILES:="${FLUSH_FOLDER}/${OUT_PRE}_profiles_${OUT_JSON}.gz"}
-    : ${OUT_PROFILES_TWARC_LOG:="${OUT_PRE}_profiles_${OUT_LOG}"}
+    : ${OUT_PROFILES_TWARC_LOG:="${OUT_FOLDER}/${OUT_PRE}_profiles_${OUT_LOG}"}
     : ${OUT_TWEETS:="${OUT_FOLDER}/${OUT_PRE}_tweets_${OUT_JSON}"}
     : ${OUT_FLUSH_TWEETS:="${FLUSH_FOLDER}/${OUT_PRE}_tweets_${OUT_JSON}"}
-    : ${OUT_TWEETS_TWARC_LOG:="${OUT_PRE}_tweets_${OUT_LOG}"}
+    : ${OUT_TWEETS_TWARC_LOG:="${OUT_FOLDER}/${OUT_PRE}_tweets_${OUT_LOG}"}
 }
 
 ################################################################################
