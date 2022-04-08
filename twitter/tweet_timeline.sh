@@ -22,6 +22,8 @@ if [[ -s "twitter.conf" ]]; then
 fi
 : ${HANDLES:="$1"}
 : ${OUTBASE:="twitter_timeline"}
+: ${OUT_FOLDER:="."}
+: ${FLUSH_FOLDER:="${OUT_FOLDER}"}
 : ${OUTDESIGNATION:="$2"}
 : ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
@@ -58,9 +60,10 @@ check_parameters() {
         usage 2
     fi
     : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
-    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
-    : ${OUT:="${OUT_H}.json"}
-    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
+    local OUT_H="${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
+    : ${OUT:="${OUT_FOLDER}/${OUT_H}.json"}
+    : ${OUT_FLUSH:="${FLUSH_FOLDER}/${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_FOLDER}/${OUT_H}.twarc.log"}
 
 }
 
@@ -72,7 +75,8 @@ export_timelines() {
     echo "Exporting timelines for the given handles and piping to $OUT"
     while read -r HANDLE; do
         echo " - Getting timeline for $HANDLE"
-        timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
+        timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> "$OUT_FLUSH"
+        mv "$OUT_FLUSH" "$OUT"
     done <<< "$(tr ',' '\n' <<< "$HANDLES")"
 }
 

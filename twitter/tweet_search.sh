@@ -22,6 +22,7 @@ fi
 : ${TAGS:="$1"}
 : ${OUTBASE:="twitter_search"}
 : ${OUT_FOLDER:="."}
+: ${FLUSH_FOLDER:="${OUT_FOLDER}"}
 : ${OUTDESIGNATION:="$2"}
 : ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
@@ -57,9 +58,10 @@ check_parameters() {
         usage 2
     fi
     : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
-    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
-    : ${OUT:="${OUT_H}.json"}
-    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
+    local OUT_H="${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
+    : ${OUT:="${OUT_FOLDER}/${OUT_H}.json"}
+    : ${OUT_FLUSH:="${FLUSH_FOLDER}/${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_FOLDER}/${OUT_H}.twarc.log"}
 }
 
 ################################################################################
@@ -68,7 +70,8 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
+    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > "$OUT_FLUSH"
+    mv "$OUT_FLUSH" "$OUT"
 }
 
 ###############################################################################

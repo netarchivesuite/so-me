@@ -22,6 +22,7 @@ fi
 : ${OUTBASE:="twitter_filter"}
 : ${OUTDESIGNATION:="$2"}
 : ${OUT_FOLDER:="."}
+: ${FLUSH_FOLDER:="${OUT_FOLDER}"}
 : ${RUNTIME:="3600"} # Seconds
 : ${HARVEST:="true"} # Harvest linked resources
 : ${WARCIFY:="true"} # Generate WARC-representation tweets
@@ -54,9 +55,10 @@ check_parameters() {
         usage 2
     fi
     : ${OUT_TIME=$(date +%Y%m%d-%H%M)}
-    local OUT_H="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
-    : ${OUT:="${OUT_H}.json"}
-    : ${OUT_TWARC_LOG:="${OUT_H}.twarc.log"}
+    local OUT_H="${OUTBASE}_${OUTDESIGNATION}_${OUT_TIME}"
+    : ${OUT:="${OUT_FOLDER}/${OUT_H}.json"}
+    : ${OUT_FLUSH:="${FLUSH_FOLDER}/${OUT_H}.json"}
+    : ${OUT_TWARC_LOG:="${OUT_FOLDER}/${OUT_H}.twarc.log"}
 }
 
 ################################################################################
@@ -65,7 +67,8 @@ check_parameters() {
 
 filter_tweets() {
     echo "Filtering tweets for $RUNTIME seconds to $OUT"
-    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" filter "$TAGS" > $OUT
+    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" filter "$TAGS" > "$OUT_FLUSH"
+    mv "$OUT_FLUSH" "$OUT"
 }
 
 ###############################################################################
