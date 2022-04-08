@@ -25,6 +25,7 @@ fi
 : ${HANDLES:="$1"}
 : ${OUTBASE:="twitter_users"}
 : ${OUT_FOLDER:="."}
+: ${FLUSH_FOLDER:="${OUT_FOLDER}"}
 : ${OUTDESIGNATION:="$2"}
 : ${OUTDESIGNATION:="noname"}
 : ${RUNTIME:="3600"} # Seconds
@@ -61,14 +62,16 @@ check_parameters() {
     fi
     HANDLES=$(sed 's/ *, */,/g' <<< "$HANDLES")
 
-    : ${OUT_PRE:="${OUT_FOLDER}/${OUTBASE}_${OUTDESIGNATION}"}
+    : ${OUT_PRE:="${OUTBASE}_${OUTDESIGNATION}"}
     : ${OUT_TIME:="$(date +%Y%m%d-%H%M)"}
     : ${OUT_JSON:="${OUT_TIME}.json"}
     : ${OUT_LOG:="${OUT_TIME}.twarc.log"}
 
-    : ${OUT_PROFILES:="${OUT_PRE}_profiles_${OUT_JSON}.gz"}
+    : ${OUT_PROFILES:="${OUT_FOLDER}/${OUT_PRE}_profiles_${OUT_JSON}.gz"}
+    : ${OUT_FLUSH_PROFILES:="${FLUSH_FOLDER}/${OUT_PRE}_profiles_${OUT_JSON}.gz"}
     : ${OUT_PROFILES_TWARC_LOG:="${OUT_PRE}_profiles_${OUT_LOG}"}
-    : ${OUT_TWEETS:="${OUT_PRE}_tweets_${OUT_JSON}"}
+    : ${OUT_TWEETS:="${OUT_FOLDER}/${OUT_PRE}_tweets_${OUT_JSON}"}
+    : ${OUT_FLUSH_TWEETS:="${FLUSH_FOLDER}/${OUT_PRE}_tweets_${OUT_JSON}"}
     : ${OUT_TWEETS_TWARC_LOG:="${OUT_PRE}_tweets_${OUT_LOG}"}
 }
 
@@ -171,7 +174,8 @@ resolve_ids() {
 follow_users() {
     local USER_COUNT=$(tr ',' '\n' <<< "$IDS" | wc -l)
     echo " - Filtering tweets from $USER_COUNT users for $RUNTIME seconds to $OUT_TWEETS"
-    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_TWEETS
+    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_FLUSH_TWEETS
+    mv $OUT_FLUSH_TWEETS $OUT_TWEETS
 }
 
 ###############################################################################
