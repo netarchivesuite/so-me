@@ -24,7 +24,6 @@ fi
 
 : ${TIMEOUT:="60"} # Connection/idle timeout in seconds
 : ${OVERALL_TIMEOUT:="3600"} # Hard timeout for the total wget call (to avoid eternal harvests of web radio et al)
-: ${NOBUFFER:="stdbuf -oL -eL"}
 
 : ${PROFILE_IMAGE_REGEXP:='.*https://pbs.twimg.com/profile_images/.*'}
 : ${IMAGE_REGEXP:='.*\.(jpg|jpeg|gif|png|webp)$'}

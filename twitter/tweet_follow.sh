@@ -34,7 +34,6 @@ fi
 : ${LOOKUP_CHUNK_SIZE:="200"}
 : ${CALM_TIME:="7"}
 : ${TWARC_OPTIONS:=""} # Optional extra options
-: ${NOBUFFER:="stdbuf -oL -eL"}
 source tweet_common.sh
 popd > /dev/null
 
@@ -174,7 +173,7 @@ resolve_ids() {
 follow_users() {
     local USER_COUNT=$(tr ',' '\n' <<< "$IDS" | wc -l)
     echo " - Filtering tweets from $USER_COUNT users for $RUNTIME seconds to $OUT_TWEETS"
-    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_FLUSH_TWEETS
+    timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_FLUSH_TWEETS
     mv $OUT_FLUSH_TWEETS $OUT_TWEETS
 }
 
