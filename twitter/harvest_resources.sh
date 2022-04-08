@@ -139,7 +139,7 @@ harvest() {
     $WGET --version >> "$LOG"
     echo "   - wgetting $TCOUNT resources with total size limit ${Q}MB, logging to $LOG with $WGET call" | tee -a "$LOG"
     echo "timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix=\"$WT\" --input-file=\"$LINKS\" --page-requisites --warc-file=\"$WSANS\" --quota=${Q}m &>> \"$LOG\"" | tee -a "$LOG"
-    $NOBUFFER timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
+    timeout $OVERALL_TIMEOUT $WGET --timeout=${TIMEOUT} --directory-prefix="$WT" --input-file="$LINKS" --page-requisites --warc-file="$WSANS" --quota=${Q}m &>> "$LOG"
     rm -r "$WT"
     if [[ ! -s "${WARC}.gz" && -s "${WARC}" ]]; then
         echo "   - Produced ${WARC} ($(du -h "${WARC}" | grep -o "^[0-9.]*.")), which should have been ${WARC}.gz" | tee -a "$LOG"

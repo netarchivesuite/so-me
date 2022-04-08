@@ -72,7 +72,7 @@ export_timelines() {
     echo "Exporting timelines for the given handles and piping to $OUT"
     while read -r HANDLE; do
         echo " - Getting timeline for $HANDLE"
-        $NOBUFFER timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
+        timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" timeline "$HANDLE" >> $OUT
     done <<< "$(tr ',' '\n' <<< "$HANDLES")"
 }
 

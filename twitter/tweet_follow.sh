@@ -171,7 +171,7 @@ resolve_ids() {
 follow_users() {
     local USER_COUNT=$(tr ',' '\n' <<< "$IDS" | wc -l)
     echo " - Filtering tweets from $USER_COUNT users for $RUNTIME seconds to $OUT_TWEETS"
-    $NOBUFFER timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_TWEETS
+    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWEETS_TWARC_LOG" filter --follow "$IDS" > $OUT_TWEETS
 }
 
 ###############################################################################

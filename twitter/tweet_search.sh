@@ -68,7 +68,7 @@ check_parameters() {
 
 filter_tweets() {
     echo "Searching tweets with the given tags and piping to $OUT"
-    $NOBUFFER timeout $RUNTIME $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
+    timeout $RUNTIME $NOBUFFER $TWARC $TWARC_OPTIONS --log "$OUT_TWARC_LOG" search "$TAGS" > $OUT
 }
 
 ###############################################################################
