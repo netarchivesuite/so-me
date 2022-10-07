@@ -1,17 +1,28 @@
-; Tags to filter
+; Tags and keywords to filter
 ;
-; Tags can be divided with newlines or comma. Leading # is optional
+; Tags and keywords can be divided with newlines or comma.
 ;
-; Empty lines, spaces and comment-lines (lines starting with ;) are ignored
+; Terms beginning with # means hashtag matching and will only match explicit tags:
+; '#orb' will match 'We are all round #wizardry #orb' but NOT 'I have an orb'
+;
+; Keywords also matches both freetext and hashtags:
+; 'orb' will match both 'We are all round #wizardry #orb' AND 'I have an orb'
+;
+; If keywords contains spaces, each term will be present in matching tweets, but
+; not necessarily in order:
+; 'green orb' will match 'I have a blue orb and a green goblin'
+;
+; Empty lines and comment-lines (lines starting with ;) are ignored
 
 
 ; General Danish politics
 dkpol
 dkøko
+Mette Frederiksen
 
 ; City- and regional election 2021
-kv21,kV2021,kommunalvalg,kommunalvalg21,kommunalvalg2021,kommunalvalget2021
-rv21, regionsvalg2021
+#kv21,#kV2021,kommunalvalg,kommunalvalg21,kommunalvalg2021,kommunalvalget2021
+#rv21, regionsvalg2021
 
 ; Corona
 #coronapas

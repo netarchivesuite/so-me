@@ -33,6 +33,8 @@ fi
 : ${BEFORE:=""} # If defined, this script will be called before processing
 : ${AFTER:=""} # If defined, this script will be called after processing. Note that harvest jobs will still be running when this script is called!
 
+: ${DEBUG:="false"} # If true, no actual Twitter calls will be performed
+
 # Used for statistics in report
 : ${TOPX:="20"}
 : ${TOP_FILES:="${OUT_FOLDER}/*_$(date --date="yesterday" +"%Y%m%d")-*.json.gz ${OUT_FOLDER}/*_$(date +"%Y%m%d")-*.json.gz"}
@@ -44,7 +46,11 @@ STARTED_BATCH=0
 # Logs messages with timestamp. Logically it belongs under FUNCTIONS, but it is needed
 # by check_parameters
 log() {
-    echo "$(date +%Y-%m-%dT%H:%M:%S) $1" >> "$LOG"
+    if [[ "$DEBUG" == "false" ]]; then
+        echo "$(date +%Y-%m-%dT%H:%M:%S) $1" >> "$LOG"
+    else
+        echo "DEBUG: Would have logged: $(date +%Y-%m-%dT%H:%M:%S) $1"
+    fi
 }
 log_onetime() {
     echo "$(date +%Y-%m-%dT%H:%M:%S) $1" >> "$LOG_ONETIME"
@@ -153,10 +159,14 @@ onetime_job() {
             fi
             # TODO Handle https://github.com/netarchivesuite/so-me/issues/17 so that this can be collapsed
             if [[ "true" == "$PERFORM_ONETIME" ]]; then
-                log "Starting onetime harvest for tag #$TAG"
-                log_onetime "#$TAG"
-#                echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_search.sh \"#$TAG\" \"${JOBNAME}_${TAG}\" < /dev/null >> tweet_search.log 2>> tweet_search.log &\""
-                TWARC_OPTIONS="$CREDS" ./tweet_search.sh "#$TAG" "${JOBNAME}_${TAG}" < /dev/null >> tweet_search.log 2>> tweet_search.log &
+                log "Starting onetime harvest for tag $TAG"
+                log_onetime "$TAG"
+                local OUT_ID="$(tr -d ' ' <<< "${JOBNAME}_${TAG}" | tr -d '#')"
+                if [[ "$DEBUG" == "false" ]]; then
+                    TWARC_OPTIONS="$CREDS" ./tweet_search.sh "$TAG" "$OUT_ID" < /dev/null >> tweet_search.log 2>> tweet_search.log &
+                else
+                    echo "Debug: Would have called ./tweet_search.sh \"$TAG\" \"$OUT_ID\""
+                fi
                 STARTED_ONETIME=$((STARTED_ONETIME+1))
             else
                 log "Skipping onetime harvest for tag #$TAG as PERFORM_ONETIME==$PERFORM_ONETIME"
@@ -173,8 +183,11 @@ onetime_job() {
             if [[ "true" == "$PERFORM_ONETIME" ]]; then
                 log "Starting onetime harvest for profile $PROFILE"
                 log_onetime "@$PROFILE"
-#                echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_timeline.sh \"$PROFILE\" \"${JOBNAME}_${PROFILE}\" < /dev/null >> tweet_timeline.log 2>> tweet_timeline.log &\""
-                TWARC_OPTIONS="$CREDS" ./tweet_timeline.sh "$PROFILE" "${JOBNAME}_${PROFILE}" < /dev/null >> tweet_timeline.log 2>> tweet_timeline.log &
+                if [[ "$DEBUG" == "false" ]]; then
+                    TWARC_OPTIONS="$CREDS" ./tweet_timeline.sh "$PROFILE" "${JOBNAME}_${PROFILE}" < /dev/null >> tweet_timeline.log 2>> tweet_timeline.log &
+                else
+                    echo "Debug: Would have called ./tweet_timeline.sh \"$PROFILE\" \"${JOBNAME}_${PROFILE}\""
+                fi
                 STARTED_ONETIME=$((STARTED_ONETIME+1))
             else
                 log "Skipping onetime harvest for profile #$PROFILE as PERFORM_ONETIME==$PERFORM_ONETIME"
@@ -208,8 +221,11 @@ batch_job() {
     if [[ "tags" == "$JOBTYPE" ]]; then
         if [[ "true" == "$PERFORM_BATCH" ]]; then
             log "Starting batch harvest for tag job $JOB with $(wc -l < "$JOB") entries"
-#            echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_filter.sh \"$(commarize "$JOB")\" \"${JOBNAME}\" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &\""
-            TWARC_OPTIONS="$CREDS" ./tweet_filter.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
+            if [[ "$DEBUG" == "false" ]]; then
+                TWARC_OPTIONS="$CREDS" ./tweet_filter.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
+            else
+                echo "Debug: Would have called ./tweet_filter.sh \"$(commarize "$JOB")\" \"${JOBNAME}\""
+            fi
             STARTED_BATCH=$((STARTED_BATCH+1))
         else
             log "Skipping batch harvest for tag $JOB ($(wc -l < "$JOB") entries) as PERFORM_BATCH==$PERFORM_BATCH"
@@ -217,8 +233,11 @@ batch_job() {
     elif [[ "profiles" == "$JOBTYPE" ]]; then
         if [[ "true" == "$PERFORM_BATCH" ]]; then
             log "Starting batch harvest for profile job $JOB with $(wc -l < "$JOB") entries"
-#            echo "TWARC_OPTIONS=\"$CREDS\" ./tweet_follow.sh \"$(commarize "$JOB")\" \"${JOBNAME}\" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &\""
-            TWARC_OPTIONS="$CREDS" ./tweet_follow.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
+            if [[ "$DEBUG" == "false" ]]; then
+                TWARC_OPTIONS="$CREDS" ./tweet_follow.sh "$(commarize "$JOB")" "${JOBNAME}" < /dev/null >> tweet_filter.log 2>> tweet_filter.log &
+            else
+                echo "Debug: Would have called ./tweet_follow.sh \"$(commarize "$JOB")\" \"${JOBNAME}\""
+            fi
             STARTED_BATCH=$((STARTED_BATCH+1))
         else
             log "Skipping batch harvest for profile $JOB ($(wc -l < "$JOB") entries) as PERFORM_BATCH==$PERFORM_BATCH"
@@ -264,7 +283,7 @@ batch_jobs() {
 # Input: jobfile
 clean_job_file() {
     local JOB="$1"
-    grep -v "^;" < "$JOB" | tr ',' $'\n' | tr -d ' ' | grep -v "^$" | sed 's/[@#]//' | LC_ALL=c sort
+    grep -v "^;" < "$JOB" | tr ',' $'\n' | grep -v "^ *$" | sed -e 's/[@]//' -e 's/^ *//' -e 's/ *$//' | LC_ALL=c sort
 }
 
 # Processes a single job file, updating old/current and added/removed
@@ -287,13 +306,12 @@ prepare_job() {
     fi
     clean_job_file "$JOB" > "$CURRENT"
 
-    LC_ALL=c comm -2 -3 "$CURRENT" "$OLD" | tr -d ' ' > "$ADDED"
-    LC_ALL=c comm -1 -3 "$CURRENT" "$OLD" | tr -d ' ' > "$REMOVED"
+    LC_ALL=c comm -2 -3 "$CURRENT" "$OLD" | sed -e 's/^ *//' -e 's/ *$//' > "$ADDED"
+    LC_ALL=c comm -1 -3 "$CURRENT" "$OLD" | sed -e 's/^ *//' -e 's/ *$//' > "$REMOVED"
     if [[ -s "$ADDED" ]]; then
         cat "$ADDED" >> "$ONETIME"
     fi
 }
-
 
 JOBS_REGEXP='^.*/\(tags\|profiles\)_[0-9]\+_.*[.]txt'
 # Iterates the txt-files with tags and profiles, producing both one-time and recurring jobs
