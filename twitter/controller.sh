@@ -283,7 +283,7 @@ batch_jobs() {
 # Input: jobfile
 clean_job_file() {
     local JOB="$1"
-    grep -v "^;" < "$JOB" | tr ',' $'\n' | grep -v "^ *$" | sed -e 's/[@]//' -e 's/^ *//' -e 's/ *$//' | LC_ALL=c sort
+    grep -v "^;" < "$JOB" | tr ',' $'\n' | grep -v "^ *$" | grep -v "^# *$" | sed -e 's/[@]//' -e 's/^ *//' -e 's/ *$//' | LC_ALL=c sort
 }
 
 # Processes a single job file, updating old/current and added/removed
