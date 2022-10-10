@@ -158,6 +158,7 @@ handles_to_ids() {
     
     # All handles resolved
     if [[ "." == ".$UNRESOLVED" ]]; then
+        echo "$(date +'%Y-%m-%d %H:%M'): All specified handles have been resolved to IDs" >> twitter_handles.log
         exit
     fi
 
