@@ -342,7 +342,8 @@ escape() {
 
 last_produced() {
     pushd "$OUT_FOLDER" > /dev/null
-    ls -lart | tail -n 100 | escape
+    # Color empty files red
+    ls -lart | tail -n 100 | escape | sed 's/\(-rw-rw-r--.  1 netarktw netarktw\s*0 .*\)/<span style="color: red;">\1<\/span>/'
     popd > /dev/null
 }
 
