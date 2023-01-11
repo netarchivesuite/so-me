@@ -31,6 +31,9 @@ fi
 
 : ${IMAGES_ONLY:="false"} # If true, only images are harvested)
 : ${WGET:="$(which wget)"}
+
+# Scratch folder used by wget. Defaults to current folder
+: ${SCRATCH:="."}
 popd > /dev/null
 
 usage() {
@@ -116,7 +119,7 @@ harvest() {
     local LINKS="${WBASE%.*}.links"
     local LOG="${WBASE%.*}.wget.log"
     local WSANS="${WARC%.*}"
-    local WT="t_wget_warc_tmp_$RANDOM"
+    local WT="${SCRATCH}/t_wget_warc_tmp_$RANDOM"
     
     rm -rf "$WT"
     mkdir -p "$WT"
